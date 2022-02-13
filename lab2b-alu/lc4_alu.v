@@ -8,6 +8,7 @@ module lc4_alu(input  wire [15:0] i_insn,
                input wire [15:0]  i_r1data, //rs
                input wire [15:0]  i_r2data, //rt
                output wire [15:0] o_result);
+   
    //ADD, MUL, SUB, DIV, MOD, AND, NOT, OR, XOR, SLL, SRA, SRL, CONST, HICONST
    wire [15:0] add_sub_result;
    wire [15:0] mul_result;
