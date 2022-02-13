@@ -24,23 +24,30 @@ module lc4_alu(input  wire [15:0] i_insn,
    wire	[15:0] const_result;
    wire	[15:0] hiconst_result;
 
-   //shifts
-   assign sll_result = i_r1data << i_insn[3:0];
-   assign sra_result = i_r1data >>> i_insn[3:0];
-   assign srl_result = i_r1data >> i_insn[3:0];
+   assign mul_result = i_r1data * i_r2data;
+
+   assign and_result = i_r1data & i_r2data;
+   assign not_result = ~i_r1data;
+   assign or_result = i_r1data | i_r2data;
+   assign xor_result = i_r1data ^ i_r2data; 
+
+    //shifts
+    assign sll_result = i_r1data << i_insn[3:0];
+    assign sra_result = i_r1data >>> i_insn[3:0];
+    assign srl_result = i_r1data >> i_insn[3:0];
 
    
-   //DIV and MOD
-   lc4_divider d0(.i_dividend(i_r1data),
-		  .i_divisor(i_r2data),
-		  .o_remainder(mod_result),
-		  .o_quotient(div_result));
+    //DIV and MOD
+    lc4_divider d0(.i_dividend(i_r1data),
+ 		  .i_divisor(i_r2data),
+ 		  .o_remainder(mod_result),
+ 		  .o_quotient(div_result));
    
-   //ADD and SUB
-   cla16 c0(.a(),
-	    .b(),
-	    .cin(),
-	    .sum(add_result));
+    //ADD and SUB
+    cla16 c0(.a(i_r1data),
+ 	    .b(i_r2data),
+ 	    .cin(i_insn[4]),
+ 	    .sum(add_sub_result));
    
    
 endmodule
