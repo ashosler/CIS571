@@ -24,12 +24,26 @@ module lc4_alu(input  wire [15:0] i_insn,
    wire	[15:0] const_result;
    wire	[15:0] hiconst_result;
 
+   assign o_result = (i_insn[15:12] === 4'b0000) ? branches
+        (i_insn[15:12] === 4'b0001) ? add_div : 
+        (i_insn[15:12] === 4'b0010) ? comparisons :
+        (i_insn[15:12] === 4'b0100) ? jbranches 
+        (i_insn[15:12] === 4'b0101) ? logicals : 
+        (i_insn[15:12] === 4'b0110) ? ldr:
+        (i_insn[15:12] === 4'b0111) ? st :
+        (i_insn[15:12] === 4'b1000) ? rti :
+        (i_insn[15:12] === 4'b1001) ? const :
+        (i_insn[15:12] === 4'b1010) ? shifts : 
+        (i_insn[15:12] === 4'b1100) ? jumps :
+        (i_insn[15:12] === 4'b1101) ? hiconst : trap;
+
    assign mul_result = i_r1data * i_r2data;
 
    assign and_result = i_r1data & i_r2data;
    assign not_result = ~i_r1data;
    assign or_result = i_r1data | i_r2data;
-   assign xor_result = i_r1data ^ i_r2data; 
+   assign xor_result = i_r1data ^ i_r2data;
+   assign andext_result = i_r1data & i_insn[4:0]; 
 
     //shifts
     assign sll_result = i_r1data << i_insn[3:0];
