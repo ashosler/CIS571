@@ -1,5 +1,5 @@
-/* TODO: Names of all group members
- * TODO: PennKeys of all group members
+/* TODO: Allison Hosler, Antaures Jackson
+ * TODO: ashosler, ajj4311
  *
  * lc4_regfile.v
  * Implements an 8-register register file parameterized on word size.
