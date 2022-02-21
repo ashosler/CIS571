@@ -9,10 +9,12 @@ module lc4_alu(input  wire [15:0] i_insn,
                input wire [15:0]  i_r2data, //rt
                output wire [15:0] o_result);
 
+
    wire [3:0] op = i_insn[15:12];
    
    //AND, NOT, OR, XOR
    wire [15:0] and_result;
+
    wire	[15:0] not_result;
    wire [15:0] or_result;
    wire	[15:0] xor_result;
@@ -26,6 +28,7 @@ module lc4_alu(input  wire [15:0] i_insn,
    //CONST, HICONST
    wire	[15:0] const_result;
    wire	[15:0] hiconst_result;
+
    assign const_result = i_insn[8] == 1'b0 ? 16'b0 | i_insn[8:0] : (16'hffff << 9) | i_insn[8:0];
    assign hiconst_result = (i_r1data & 16'hff) | (i_insn[7:0] << 8);
    
@@ -37,10 +40,12 @@ module lc4_alu(input  wire [15:0] i_insn,
    assign sra_result = $signed(i_r1data) >>> i_insn[3:0];
    assign srl_result = i_r1data >> i_insn[3:0];
 
+
    //MUL
    wire [15:0] mul_result;
    assign mul_result = i_r1data * i_r2data;   
    
+
    //DIV, MOD
    wire [15:0] div_result;
    wire [15:0] mod_result;
@@ -88,6 +93,7 @@ module lc4_alu(input  wire [15:0] i_insn,
 	    .b(add_b),
 	    .cin(add_cin),
 	    .sum(add_result));
+
    
 
    //JMPR, JSR, JSRR, RTI, TRAP
