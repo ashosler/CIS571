@@ -24,8 +24,83 @@ module lc4_regfile #(parameter n = 16)
     input  wire         i_rd_we    // write enable
     );
 
-   /***********************
-    * TODO YOUR CODE HERE *
-    ***********************/
+   wire [n-1:0] r0v, r1v, r2v, r3v, r4v, r5v, r6v, r7v;
 
+   //create all 8 registers
+   Nbit_reg #(n) r0 (.in(i_wdata),
+		     .out(r0v),
+		     .clk(clk),
+		     .we((i_rd == 3'd0) & i_rd_we),
+		     .gwe(gwe),
+		     .rst(rst));
+   
+   Nbit_reg #(n) r1 (.in(i_wdata),
+                     .out(r1v),
+                     .clk(clk),
+                     .we((i_rd == 3'd1) & i_rd_we),
+                     .gwe(gwe),
+                     .rst(rst));
+   
+   Nbit_reg #(n) r2 (.in(i_wdata),
+                     .out(r2v),
+                     .clk(clk),
+                     .we((i_rd == 3'd2) & i_rd_we),
+                     .gwe(gwe),
+                     .rst(rst));
+   
+   Nbit_reg #(n) r3 (.in(i_wdata),
+                     .out(r3v),
+                     .clk(clk),
+                     .we((i_rd == 3'd3) & i_rd_we),
+                     .gwe(gwe),
+                     .rst(rst));
+   
+   Nbit_reg #(n) r4 (.in(i_wdata),
+                     .out(r4v),
+                     .clk(clk),
+                     .we((i_rd == 3'd4) & i_rd_we),
+                     .gwe(gwe),
+                     .rst(rst));
+   
+   Nbit_reg #(n) r5 (.in(i_wdata),
+                     .out(r5v),
+                     .clk(clk),
+                     .we((i_rd == 3'd5) & i_rd_we),
+                     .gwe(gwe),
+                     .rst(rst));
+   
+   Nbit_reg #(n) r6 (.in(i_wdata),
+                     .out(r6v),
+                     .clk(clk),
+                     .we((i_rd == 3'd6) & i_rd_we),
+                     .gwe(gwe),
+                     .rst(rst));
+   
+   Nbit_reg #(n) r7 (.in(i_wdata),
+                     .out(r7v),
+                     .clk(clk),
+                     .we((i_rd == 3'd7) & i_rd_we),
+                     .gwe(gwe),
+                     .rst(rst));
+
+   //select read source Values for read port
+   assign o_rs_data = i_rs == 3'd0 ? r0v :
+                      i_rs == 3'd1 ? r1v :
+                      i_rs == 3'd2 ? r2v :
+                      i_rs == 3'd3 ? r3v :
+                      i_rs == 3'd4 ? r4v :
+                      i_rs == 3'd5 ? r5v :
+                      i_rs == 3'd6 ? r6v :
+                      r7v;
+
+   assign o_rt_data = i_rt == 3'd0 ? r0v :
+                      i_rt == 3'd1 ? r1v :
+                      i_rt == 3'd2 ? r2v :
+                      i_rt == 3'd3 ? r3v :
+                      i_rt == 3'd4 ? r4v :
+                      i_rt == 3'd5 ? r5v :
+                      i_rt == 3'd6 ? r6v :
+                      r7v;
+   
+   
 endmodule
