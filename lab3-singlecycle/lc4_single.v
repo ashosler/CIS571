@@ -134,8 +134,8 @@ module lc4_processor
 			   (nzp == 16'b1) & (branch_type[0] == 1'b1) ? 1'b1: //p
 			   (nzp == 16'hffff) & (branch_type[2] == 1'b1) ? 1'b1: //n
 			   1'b0;
-   assign o_cur_pc = (is_branch & is_true_branch) | is_control_insn ? alu_result : pc_inc;
-   assign next_pc = o_cur_pc;
+   assign next_pc = (is_branch & is_true_branch) | is_control_insn ? alu_result : pc_inc;
+   assign o_cur_pc = next_pc;
 		   
    // Assign test wires
    assign test_cur_pc = pc;
@@ -172,10 +172,20 @@ module lc4_processor
     */
 `ifndef NDEBUG
    always @(posedge gwe) begin
-      // $display("%d %h %h %h %h %h", $time, f_pc, d_pc, e_pc, m_pc, test_cur_pc);
-      // if (o_dmem_we)
-      //   $display("%d STORE %h <= %h", $time, o_dmem_addr, o_dmem_towrite);
+       //$display("%d %h %h %h %h %h", $time, f_pc, d_pc, e_pc, m_pc, test_cur_pc);
+      
+      $display("PC: %d", pc);
+      $display("insn: %b", i_cur_insn);
+      if (regfile_we) begin
+          $display("WRITE to R%d: %b", wsel, rd_data);
+          end
+      if (o_dmem_we) begin
+          $display("%d STORE %h <= %h", $time, o_dmem_addr, o_dmem_towrite);
+	  end
 
+      if (o_cur_pc != pc_inc) begin
+          $display("JUMP to PC: %d", o_cur_pc);
+          end
       // Start each $display() format string with a %d argument for time
       // it will make the output easier to read.  Use %b, %h, and %d
       // for binary, hex, and decimal output of additional variables.
@@ -214,7 +224,7 @@ module lc4_processor
       // The Objects pane will update to display the wires
       // in that module.
 
-      // $display();
+       $display();
    end
 `endif
 endmodule
