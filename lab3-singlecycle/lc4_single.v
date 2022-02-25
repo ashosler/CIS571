@@ -109,7 +109,9 @@ module lc4_processor
                .o_result(alu_result));
    
    // Data Memory
-   assign o_dmem_addr = alu_result;
+   assign o_dmem_addr = is_load ? alu_result :
+			is_store ? alu_result :
+			16'b0;
    assign o_dmem_towrite = rt_data;
    assign o_dmem_we = is_store;
 
@@ -124,18 +126,26 @@ module lc4_processor
 		    alu_result; 
 
    // NZP Register (CMPs nzp_we)
-   wire [15:0] 		nzp;
-   Nbit_reg #(16) nzp_reg (.in(alu_result), .out(nzp), .clk(clk), .we(nzp_we), .gwe(gwe), .rst(rst));
+   wire [2:0] 		nzp, nzp_in;
+   wire [15:0] 		sel_nzp;
+   assign sel_nzp = is_load ? i_cur_dmem_data :
+		    i_cur_insn[15:12] == 4'b1111 ? pc_inc : //TRAP (or should it be all control insn?)
+		    alu_result;
+   assign nzp_in = sel_nzp == 16'b0 ? 3'b010 :
+		   //sel_nzp > 16'b0 ? 3'b001 :
+		   sel_nzp[15] == 1'b0 ? 3'b001 :
+		   3'b100;
+   Nbit_reg #(3) nzp_reg (.in(nzp_in), .out(nzp), .clk(clk), .we(nzp_we), .gwe(gwe), .rst(rst));
    
    // Branch Unit
    wire	is_true_branch;
    wire [2:0] branch_type = i_cur_insn[11:9];
-   assign is_true_branch = (nzp == 16'b0) & (branch_type[1] == 1'b1) ? 1'b1: //z
-			   (nzp == 16'b1) & (branch_type[0] == 1'b1) ? 1'b1: //p
-			   (nzp == 16'hffff) & (branch_type[2] == 1'b1) ? 1'b1: //n
+   assign is_true_branch = (nzp == 3'b010) & (branch_type[1] == 1'b1) ? 1'b1: //z
+			   (nzp == 3'b001) & (branch_type[0] == 1'b1) ? 1'b1: //p
+			   (nzp == 3'b100) & (branch_type[2] == 1'b1) ? 1'b1: //n
 			   1'b0;
    assign next_pc = (is_branch & is_true_branch) | is_control_insn ? alu_result : pc_inc;
-   assign o_cur_pc = next_pc;
+   assign o_cur_pc = pc;
 		   
    // Assign test wires
    assign test_cur_pc = pc;
@@ -144,11 +154,13 @@ module lc4_processor
    assign test_regfile_wsel = wsel;
    assign test_regfile_data = rd_data;
    assign test_nzp_we = nzp_we;
-   assign test_nzp_new_bits = alu_result;
+   assign test_nzp_new_bits = nzp_in;
    assign test_dmem_we = o_dmem_we;
    assign test_dmem_addr = o_dmem_addr;
-   assign test_dmem_data = rd_data;
-   
+   assign test_dmem_data = is_load ? i_cur_dmem_data :
+                           is_store ? o_dmem_towrite :
+                           16'b0;
+			      
    
    
    /*******************************   
@@ -175,7 +187,9 @@ module lc4_processor
        //$display("%d %h %h %h %h %h", $time, f_pc, d_pc, e_pc, m_pc, test_cur_pc);
       
       $display("PC: %d", pc);
-      $display("insn: %b", i_cur_insn);
+      $display("insn: %b %h", i_cur_insn, i_cur_insn);
+      $display("ALU: %b", alu_result);
+      $display("sel_nzp: %b   nzp_in: %b", sel_nzp, nzp_in);
       if (regfile_we) begin
           $display("WRITE to R%d: %b", wsel, rd_data);
           end
