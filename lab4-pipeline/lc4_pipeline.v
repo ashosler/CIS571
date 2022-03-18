@@ -1,5 +1,5 @@
 /*  Names: Alison Hosler and Antaures Jackson
-    pennkeys: ashosler and ajj4311
+    Pennkeys: ashosler and ajj4311
 */
 
 `timescale 1ns / 1ps
