@@ -1,4 +1,6 @@
-/* TODO: name and PennKeys of all group members here */
+/*  Names: Alison Hosler and Antaures Jackson
+    pennkeys: ashosler and ajj4311
+*/
 
 `timescale 1ns / 1ps
 
