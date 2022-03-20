@@ -35,7 +35,18 @@ module lc4_processor
     output wire [7:0]  led_data // Which Zedboard LEDs should be turned on?
     );
    
-   /*** YOUR CODE HERE ***/
+    assign led_data = switch_data;
+
+    assign test_stall = 2'b00;
+
+    // pc wires attached to the PC register's ports
+    wire[15:0] pc;               // Currrent program counter read out from pc_reg
+    wire[15:0] next_pc;          // Next program counter (computed and fed into next_pc)
+
+    // Program counter register, starts at 8200h at bootup
+    Nbit_reg #(16, 16'h8200) pc_reg (.in(next_pc), .out(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+
 
    /* Add $display(...) calls in the always block below to
     * print out debug information at the end of every cycle.
