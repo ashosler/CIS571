@@ -46,12 +46,51 @@ module lc4_processor
     // Program counter register, starts at 8200h at bootup
     Nbit_reg #(16, 16'h8200) pc_reg (.in(next_pc), .out(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
+    // Instantiate fetch to decode register
+   wire [31:0] i_fd, o_fd;
+   wire [15:0] pc_inc, insn_from_fd, pc_from_fd;
+   cla16 c0(.a(pc), .b(16'b0), .cin(1'b1), .sum(pc_inc));
 
+   assign i_fd = {pc_inc, i_cur_insn};
+   Nbit_reg# (32) fetch_to_decode (.in(i_fd), .out(o_fd), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
+   assign pc_from_fd = o_fd[31:16];
+   assign insn_from_fd = o_fd[15:0];
+    
+   // Instantiate Decoder w input insn coming from fetch_to_decode
+   wire [2:0] r1sel, r2sel, wsel;
+   wire r1re, r2re, regfile_we, nzp_we, select_pc_plus_one, is_load, is_store, is_branch, is_control_insn;
+   lc4_decoder decoder (.insn(insn_from_fd),
+            .r1sel(r1sel),
+            .r1re(r1re),
+            .r2sel(r2sel),
+            .r2re(r2re),
+            .wsel(wsel),
+            .regfile_we(regfile_we),
+            .nzp_we(nzp_we),
+            .select_pc_plus_one(select_pc_plus_one),
+            .is_load(is_load),
+            .is_store(is_store),
+            .is_branch(is_branch),
+            .is_control_insn(is_control_insn));
+   
+   // Instantiate register file using decoded wires coming from decoder that took insn from fetch_to_decode
+   wire [15:0] rs_data_to_de, rt_data_to_de;
+   lc4_regfile register (.clk(clk),
+         .gwe(gwe),
+         .rst(rst),
+         .i_rs(r1sel),
+         .o_rs_data(rs_data_to_de),
+         .i_rt(r2sel),
+         .o_rt_data(rt_data_to_de),
+         .i_rd(wsel),
+         .i_wdata(rd_data),
+         .i_rd_we(regfile_we));
 
-   /* Add $display(...) calls in the always block below to
-    * print out debug information at the end of every cycle.
-    * 
-    * You may also use if statements inside the always block
+   // Instantiate decode to execute register
+   wire [63:0] i_de, o_de;
+   
+
+    /* You may also use if statements inside the always block
     * to conditionally print out information.
     *
     * You do not need to resynthesize and re-implement if this is all you change;
@@ -62,6 +101,9 @@ module lc4_processor
       // $display("%d %h %h %h %h %h", $time, f_pc, d_pc, e_pc, m_pc, test_cur_pc);
       // if (o_dmem_we)
       //   $display("%d STORE %h <= %h", $time, o_dmem_addr, o_dmem_towrite);
+
+      $display("PC: %d", pc)     
+      $display("insn: %b %h", i_cur_insn, i_cur_insn);
 
       // Start each $display() format string with a %d argument for time
       // it will make the output easier to read.  Use %b, %h, and %d
@@ -101,7 +143,7 @@ module lc4_processor
       // The Objects pane will update to display the wires
       // in that module.
 
-      //$display(); 
+      $display(); 
    end
 `endif
 endmodule
