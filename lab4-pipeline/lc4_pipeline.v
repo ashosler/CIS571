@@ -47,14 +47,17 @@ module lc4_processor
     Nbit_reg #(16, 16'h8200) pc_reg (.in(next_pc), .out(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
     // Instantiate fetch to decode register
-   wire [31:0] i_fd, o_fd;
+   wire [31:0] input_fd, output_fd;
    wire [15:0] pc_inc, insn_from_fd, pc_from_fd;
    cla16 c0(.a(pc), .b(16'b0), .cin(1'b1), .sum(pc_inc));
 
-   assign i_fd = {pc_inc, i_cur_insn};
-   Nbit_reg# (32) fetch_to_decode (.in(i_fd), .out(o_fd), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
+   assign input_fd = {pc_inc, i_cur_insn};
+   Nbit_reg# (32) fetch_to_decode (.in(input_fd), .out(output_fd), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    assign pc_from_fd = o_fd[31:16];
    assign insn_from_fd = o_fd[15:0];
+
+   wire[2:0] stall_fd, stall_de, stall_em, stall_mw;
+   Nbit_reg #(2, 2'b10) fetch_stall_reg (.in(), .out(), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     
    // Instantiate Decoder w input insn coming from fetch_to_decode
    wire [2:0] r1sel, r2sel, wsel;
@@ -87,7 +90,29 @@ module lc4_processor
          .i_rd_we(regfile_we));
 
    // Instantiate decode to execute register
-   wire [63:0] i_de, o_de;
+   wire [63:0] input_de, output_de;
+   wire [15:0] pc_from_de, rs_data_from_de, rt_data_from_de, insn_from_de;
+   assign input_de = {pc_from_fd, rs_data_to_de, rt_data_to_de, insn_from_fd}
+   Nbit_Reg #(64) decode_to_execute (.in(input_de), .out(output_de), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(2, 2'b10) decode_stall (.in(), .out(), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+   // Instantiate ALU
+   assign insn_from_de = output_de[15:0];
+   assign pc_from_de = output_de[63:48];
+   assign rs_data_from_de = output_de[47:32];
+   assign rt_data_from_de = output_de[31:16];
+   wire [15:0] alu_result;
+   lc4_alu alu (.i_insn(insn_from_de),
+       .i_pc(pc_from_de),
+       .i_r1data(rs_data_from_de), 
+       .i_r2data(rt_data_from_de), 
+       .o_result(alu_result));
+
+   // Execute to memory register
+   wire[49:0] input_em, output_em;
+   assign input_em = {pc_from_de, }
+   Nbit_reg #(49) execute_to_memory (.in(input_em), .out(output_em), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(2, 2'b10) execute_stall (.in(), .out(), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    
 
     /* You may also use if statements inside the always block
