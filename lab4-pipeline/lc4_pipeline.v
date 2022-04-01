@@ -51,7 +51,7 @@ module lc4_processor
     Nbit_reg #(16, 16'h8200) pc_reg (.in(next_pc), .out(pc), .clk(clk), .we(pc_we), .gwe(gwe), .rst(rst));
 
     // Stall wires and flush wires
-    wire [1:0] fd_stall, de_stall, em_stall, mw_stall;
+    wire [1:0] dec_stall, ex_stall, mem_stall, wb_stall;
 
 
    // ======================== DECODE Stage ==============================
@@ -66,10 +66,13 @@ module lc4_processor
 	    .sum(pc_inc));
 
     // Register(s) for fetch to decode
-    Nbit_reg #(16) FD_PCINC(.in(pc_inc), .out(DEC_pc_inc), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) FD_PCINC(.in(pc_inc), .out(DEC_pc_inc), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst)); //TODO: what should th write enable be set to here?
     Nbit_reg #(16) FD_INSN(.out(DEC_insn), .in(i_cur_insn), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
     Nbit_reg #(1) (.out(fd_flush), .in(fet_flush), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
     Nbit_reg #(16) (.out(DEC_pc), .in(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+    // Decode stall register
+    Nbit_reg #(2, 2'b10) FD_StallReg (.out(dec_stall), .in(1'b0), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
 
     // Wires for decoder
     wire [2:0] r1sel, r2sel, wsel; // 3 3-bit select wires
@@ -111,6 +114,9 @@ module lc4_processor
     wire wd_bypass_output = use_wd_bypass ? rd_data : rs_data;
 
     // ========================= EXECUTE Stage ===========================
+    // Stall register for [decode to] execute
+    Nbit_reg #(2, 2'b10) DE_Stall (.out(ex_stall), .in(dec_stall), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
+    
     // Wires for decode to execute pipeline register
     wire [15:0] EX_pc_inc, EX_rs_data, EX_rt_data, EX_insn, EX_pc; // May not need EX_insn (resolved: need to pass insn through wb for test wires)
     wire [2:0] EX_r1sel, EX_r2sel, EX_wsel; // Should we still pass through r1 and r2 sel?
@@ -119,14 +125,14 @@ module lc4_processor
      EX_is_load, EX_is_store, EX_is_branch, EX_is_control_insn;
 
     // Pipeline register(s) for decode to execute
-    Nbit_reg #(16) DE_PCINC (.out(EX_pc_inc), .in(DEC_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-    Nbit_reg #(16) DE_RSDATA (.out(EX_rs_data), .in(rs_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-    Nbit_reg #(16) DE_RTDATA (.out(EX_rt_data), .in(rt_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-    Nbit_reg #(16) DE_PC (.out(EX_pc), .in(DEC_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) DE_PCInc (.out(EX_pc_inc), .in(DEC_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) DE_RSData (.out(EX_rs_data), .in(rs_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) DE_RTData (.out(EX_rt_data), .in(rt_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) DE_Pc (.out(EX_pc), .in(DEC_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
     // Pipeline register for decoded register write select
-    Nbit_reg #(16) DE_INSN (.out(EX_insn), .in(DEC_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-    Nbit_reg #(3) DE_WSEL (.out(EX_wsel), .in(wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); // Not sure which wsel to put in here
+    Nbit_reg #(16) DE_Insn (.out(EX_insn), .in(DEC_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(3) DE_WSel (.out(EX_wsel), .in(wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); // Not sure which wsel to put in here
 
     // Pipeline registers for decoded insn controls from decode to execute
     Nbit_reg #(9) DE_CTRL_SIGNALS (.out(EX_ctrls), 
@@ -147,10 +153,13 @@ module lc4_processor
     
     // Instantiate ALU (TODO: ALU needs muxes as input)
     wire [15:0] alu_result;
-    lc4_alu ALU (.i_insn(EX_insn), .i_pc(EX_pc_inc), 
-         .i_r1data(EX_rs_data), .i_r2data(EX_rt_data), .o_result(alu_result)); // May be feeding the wrong pc into the ALU
+    lc4_alu ALU (.i_insn(EX_insn), .i_pc(EX_pc), 
+         .i_r1data(EX_rs_data), .i_r2data(EX_rt_data), .o_result(alu_result)); // Feeding currrent pc into the ALU
 
     // =============================== MEMORY Stage =====================================
+    // Stall register for [execute to] memory
+    Nbit_reg #(2, 2'b10) EM_Stall (.out(mem_stall), .in(ex_stall), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
+
     // Wires for [execute to] memory pipeline register(s)
     wire [15:0] MEM_pc_inc, MEM_alu_result, MEM_rt_data, MEM_insn, MEM_pc;
     wire [2:0] MEM_wsel;
@@ -191,6 +200,9 @@ module lc4_processor
     assign o_dmem_we = MEM_is_store;
 
     // ================================ WRITEBACK Stage ==================================
+    // Stall register for [memory to] writeback
+    Nbit_reg #(2, 2'b10) MW_Stall(.out(wb_stall), .in(mem_stall), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
+
     // Wires for [memory to] writeback pipeline register
     wire [15:0] WB_pc_inc, WB_alu_result, WB_dmem_data, WB_dmem_addr, WB_dmem_towrite, WB_insn, WB_pc;
     wire WB_dmem_we;
