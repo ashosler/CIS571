@@ -67,7 +67,7 @@ module lc4_processor
 	    .sum(pc_inc));
 
     // Register(s) for fetch to decode
-    Nbit_reg #(16) FD_PCINC(.out(DEC_pc_inc), .in(pc_inc), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) FD_PCINC(.in(pc_inc), .out(DEC_pc_inc), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
     Nbit_reg #(16) FD_INSN(.out(DEC_insn), .in(i_cur_insn), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
     Nbit_reg #(2, 2'b10) (.out(fd_stall), .in(mw_stall), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst)); // NOT SURE if mw_stall should be input here
     Nbit_reg #(1) (.out(fd_flush), .in(fet_flush), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
@@ -160,7 +160,7 @@ module lc4_processor
 
     Nbit_reg #(3) (.out(MEM_wsel), .in(EX_wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     
-    // Pipeline registers for decoded insn controls from decode to execute
+    // Pipeline registers for decoded insn controls from execute to memory
     Nbit_reg #(9) EM_CTRL_SIGNALS (.out(MEM_ctrls), 
      .in({EX_r1re, EX_r2re, EX_regfile_we, EX_nzp_we, EX_select_pc_plus_one, EX_is_load, EX_is_store, EX_is_branch, EX_is_control_insn}),
      .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -186,8 +186,39 @@ module lc4_processor
     // Wires for [memory to] writeback pipeline register
     wire [15:0] WB_pc_inc, WB_alu_result, WB_dmem_data;
     wire [2:0] WB_wsel;
+    wire [8:0] WB_ctrls;
     
+    wire WB_r1re, WB_r2re, WB_regfile_we, WB_nzp_we, WB_select_pc_plus_one,
+     WB_is_load, WB_is_store, WB_is_branch, WB_is_control_insn;
+
+    // Register(s) for [memory to] writeback pipeline
     Nbit_reg #(16) MW_PCINC (.out(WB_pc_inc), .in(MEM_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) MW_ALURESULT (.out(WB_alu_result), .in(MEM_alu_result), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) MW_DMEMDATA (.out(WB_dmem_data), .in(i_cur_dmem_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+    Nbit_reg #(3) MW_WSEL (.out(WB_wsel), .in(MEM_wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+    // Pipeline registers for decoded insn controls from memory to writeback
+    Nbit_reg #(9) MW_CTRL_SIGNALS (.out(WB_ctrls), 
+     .in({MEM_r1re, MEM_r2re, MEM_regfile_we, MEM_nzp_we, MEM_select_pc_plus_one, MEM_is_load, MEM_is_store, MEM_is_branch, MEM_is_control_insn}),
+     .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+     assign WB_r1re = WB_ctrls[8];
+     assign WB_r2re = WB_ctrls[7];
+     assign WB_regfile_we = WB_ctrls[6];
+     assign WB_nzp_we = WB_ctrls[5];
+     assign WB_select_pc_plus_one = WB_ctrls[4];
+     assign WB_is_load = WB_ctrls[3];
+     assign WB_is_store = WB_ctrls[2];
+     assign WB_is_branch = WB_ctrl[1];
+     assign WB_is_control_insn = WB_ctrls[0];
+
+    // Mux to control register input
+    assign rd_data = WB_is_load == 1'b1 ? WB_dmem_data : 
+         select_pc_plus_one == 1'b1 ? WB_pc_inc :
+         WB_alu_result; // Should this be assigned to rd_data or to another wire?
+     
+
     /* You may also use if statements inside the always block
     * to conditionally print out information.
     *
