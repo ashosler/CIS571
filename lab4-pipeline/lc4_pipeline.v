@@ -55,6 +55,9 @@ module lc4_processor
 
 
    // ======================== DECODE Stage ==============================
+   // Decode stall register
+    Nbit_reg #(2, 2'b10) FD_StallReg (.out(dec_stall), .in(1'b0), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst)); // TODO: what should be done about 
+
    // Wires for fetch to decode register
     wire [15:0] DEC_pc_inc, DEC_insn, pc_inc, DEC_pc;
     wire fd_we;
@@ -71,11 +74,8 @@ module lc4_processor
     Nbit_reg #(1) (.out(fd_flush), .in(fet_flush), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
     Nbit_reg #(16) (.out(DEC_pc), .in(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
-    // Decode stall register
-    Nbit_reg #(2, 2'b10) FD_StallReg (.out(dec_stall), .in(1'b0), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
-
     // Wires for decoder
-    wire [2:0] r1sel, r2sel, wsel; // 3 3-bit select wires
+    wire [2:0] r1sel, r2sel, wsel, WB_wsel; // 3 3-bit select wires
     wire  r1re, r2re, regfile_we, nzp_we, select_pc_plus_one, is_load, is_store, is_branch, is_control_insn;  // 9 single bit control wires
 
     // Instantiate decoder
@@ -104,14 +104,18 @@ module lc4_processor
 		   .o_rs_data(rs_data),
 		   .i_rt(r2sel),
 		   .o_rt_data(rt_data),
-		   .i_rd(wsel),
+		   .i_rd(WB_wsel),
 		   .i_wdata(rd_data),
 		   .i_rd_we(regfile_we));
 
-    // TODO: implement WD bypass as a mux that sits just after the register file
+    // Use WD bypass when the instruction in writeback stage writes to register that insn in Decode stage wants to read from
+    wire use_wd_bypass_rs = ((regfile_we == 1) && (WB_wsel == r1sel) && (DEC_insn != 16'b0)); // assuming nop is 16'b0
+    wire use_wd_bypass_rt = ((WB_wsel == r2sel) && (WB_wsel == r2sel) && (DEC_insn != 16'b0));
+
     /* You either read the value from the register file, or the value that's
        currently being written to the register file (from the W stage). */
-    wire wd_bypass_output = use_wd_bypass ? rd_data : rs_data;
+    wire [15:0] wd_bypass_rsdata = use_wd_bypass_rs ? rd_data : rs_data;
+    wire [15:0] wd_bypass_rtdata = use_wd_bypass_rt ? rd_data : rt_data;
 
     // ========================= EXECUTE Stage ===========================
     // Stall register for [decode to] execute
@@ -126,7 +130,7 @@ module lc4_processor
 
     // Pipeline register(s) for decode to execute
     Nbit_reg #(16) DE_PCInc (.out(EX_pc_inc), .in(DEC_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-    Nbit_reg #(16) DE_RSData (.out(EX_rs_data), .in(rs_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) DE_RSData (.out(EX_rs_data), .in(wd_bypass_output), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); // use wd_bypass_output mux result here instead of rs_data?
     Nbit_reg #(16) DE_RTData (.out(EX_rt_data), .in(rt_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     Nbit_reg #(16) DE_Pc (.out(EX_pc), .in(DEC_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
@@ -135,7 +139,7 @@ module lc4_processor
     Nbit_reg #(3) DE_WSel (.out(EX_wsel), .in(wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); // Not sure which wsel to put in here
 
     // Pipeline registers for decoded insn controls from decode to execute
-    Nbit_reg #(9) DE_CTRL_SIGNALS (.out(EX_ctrls), 
+    Nbit_reg #(9) DE_CTRL_Signals (.out(EX_ctrls), 
       .in({r1re, r2re, regfile_we, nzp_we, select_pc_plus_one, is_load, is_store, is_branch, is_control_insn}),
       .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     
@@ -149,12 +153,19 @@ module lc4_processor
     assign EX_is_branch = EX_ctrl[1];
     assign EX_is_control_insn = EX_ctrls[0];
 
-    /* Not sure where but need to add functionality for sign extend and shift left */
+    // TODO: Not sure where but need to add functionality for sign extend and shift left
     
     // Instantiate ALU (TODO: ALU needs muxes as input)
     wire [15:0] alu_result;
     lc4_alu ALU (.i_insn(EX_insn), .i_pc(EX_pc), 
-         .i_r1data(EX_rs_data), .i_r2data(EX_rt_data), .o_result(alu_result)); // Feeding currrent pc into the ALU
+         .i_r1data(EX_rs_data), .i_r2data(EX_rt_data), .o_result(alu_result));
+
+    // NZP register**
+    wire [2:0] nzp, nzp_in;
+    wire [15:0] sel_nzp;
+    assign sel_nzp = EX_is_load ? i_cur_dmem_data :
+            EX_insn[15:12] == 4'b1111 ? EX_pc_inc :
+            alu_result;
 
     // =============================== MEMORY Stage =====================================
     // Stall register for [execute to] memory
@@ -253,7 +264,8 @@ module lc4_processor
     assign test_regfile_we = WB_regfile_we;
     assign test_regfile_wsel = WB_wsel;
     assign test_regfile_data = rd_data;
-    // TODO: assign test_nzp_we = nzp_we;
+    // TODO: assign test_nzp_we = WB_nzp_we;
+    // TODO: assign test_nzp_new_bits = WB_nzp_new_bits
     assign test_dmem_we = WB_dmem_we;
     assign test_dmem_addr = WB_dmem_addr;
     assign test_dmem_data = WB_is_load ? WB_dmem_data :
