@@ -107,8 +107,38 @@ module lc4_processor
 		   .i_rd_we(regfile_we));
 
     // ========================= EXECUTE Stage ===========================
-    // Register(s) for decode to execute
-    Nbit_reg #(16) 
+    // Wires for decode to execute pipeline register
+    wire [15:0] EX_pc_inc, EX_rs_data, EX_rt_data, EX_insn; // May not need EX_insn
+    wire [2:0] EX_r1sel, EX_r2sel, EX_wsel; // Should we still pass through r1 and r2 sel?
+    wire [8:0] EX_ctrls; // control signals concatenated into one wire and output as this
+    wire EX_r1re, EX_r2re, EX_regfile_we, EX_nzp_we, EX_select_pc_plus_one,
+     EX_is_load, EX_is_store, EX_is_branch, EX_is_control_insn;
+
+    // Pipeline register(s) for decode to execute
+    Nbit_reg #(16) DE_PCINC (.out(EX_pc_inc), .in(DEC_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) DE_RSDATA (.out(EX_rs_data), .in(rs_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) DE_RTDATA (.out(EX_rt_data), .in(rt_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+    // Pipeline register for decoded register write select
+    Nbit_reg #(3) DE_WSEL (.out(EX_wsel), .in(wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); // Not sure which wsel to put in here
+
+    // Pipeline registers for decoded insn controls from decode to execute
+    Nbit_reg #(9) DE_CTRL_SIGNALS (.out(EX_ctrls), 
+      .in({r1re, r2re, regfile_we, nzp_we, select_pc_plus_one, is_load, is_store, is_branch, is_control_insn}),
+      .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    
+    assign EX_r1re = EX_ctrls[8];
+    assign EX_r2re = EX_ctrls[7];
+    assign EX_regfile_we = EX_ctrls[6];
+    assign EX_nzp_we = EX_ctrls[5];
+    assign EX_select_pc_plus_one = EX_ctrls[4];
+    assign EX_is_load = EX_ctrls[3];
+    assign EX_is_store = EX_ctrls[2];
+    assign EX_is_branch = EX_ctrl[1];
+    assign EX_is_control_insn = EX_ctrls[0];
+
+   
+    
  
     /* You may also use if statements inside the always block
     * to conditionally print out information.
