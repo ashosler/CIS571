@@ -92,7 +92,7 @@ module lc4_processor
 		   .is_control_insn(is_control_insn));
 
     // Register data wires
-    wire [15:0] rs_data, rt_data, rd_data, alu_result;
+    wire [15:0] rs_data, rt_data, rd_data;
 
     // Instantiate register file
     lc4_regfile RegisterFile (.clk(clk),
@@ -120,6 +120,7 @@ module lc4_processor
     Nbit_reg #(16) DE_RTDATA (.out(EX_rt_data), .in(rt_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
     // Pipeline register for decoded register write select
+    Nbit_reg #(16) DE_INSN (.out(EX_insn), .in(DEC_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     Nbit_reg #(3) DE_WSEL (.out(EX_wsel), .in(wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); // Not sure which wsel to put in here
 
     // Pipeline registers for decoded insn controls from decode to execute
@@ -137,9 +138,56 @@ module lc4_processor
     assign EX_is_branch = EX_ctrl[1];
     assign EX_is_control_insn = EX_ctrls[0];
 
-   
+    /* Not sure where but need to add functionality for sign extend and shift left */
     
- 
+    // Instantiate ALU (TODO: ALU needs muxes as input)
+    wire [15:0] alu_result;
+    lc4_alu ALU (.i_insn(EX_insn), .i_pc(EX_pc_inc), 
+         .i_r1data(EX_rs_data), .i_r2data(EX_rt_data), .o_result(alu_result)); // May be feeding the wrong pc into the ALU
+
+    // =============================== MEMORY Stage =====================================
+    // Wires for [execute to] memory pipeline register(s)
+    wire [15:0] MEM_pc_inc, MEM_alu_result, MEM_rt_data;
+    wire [2:0] MEM_wsel;
+    wire [8:0] MEM_ctrls;
+    wire MEM_r1re, MEM_r2re, MEM_regfile_we, MEM_nzp_we, MEM_select_pc_plus_one,
+     MEM_is_load, MEM_is_store, MEM_is_branch, MEM_is_control_insn;
+
+    // Pipeline registers [execute to] memory
+    Nbit_reg #(16) EM_PCINC (.out(MEM_pc_inc), .in(EX_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) EM_ALURESULT (.out(MEM_alu_result), .in(alu_result), .clk(clk), .we(1'b1), .gwe(gwe) .rst(rst));
+    Nbit_reg #(16) EM_RTDATA (.out(MEM_rt_data), .in(EX_rt_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+    Nbit_reg #(3) (.out(MEM_wsel), .in(EX_wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    
+    // Pipeline registers for decoded insn controls from decode to execute
+    Nbit_reg #(9) EM_CTRL_SIGNALS (.out(MEM_ctrls), 
+     .in({EX_r1re, EX_r2re, EX_regfile_we, EX_nzp_we, EX_select_pc_plus_one, EX_is_load, EX_is_store, EX_is_branch, EX_is_control_insn}),
+     .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+     assign MEM_r1re = MEM_ctrls[8];
+     assign MEM_r2re = MEM_ctrls[7];
+     assign MEM_regfile_we = MEM_ctrls[6];
+     assign MEM_nzp_we = MEM_ctrls[5];
+     assign MEM_select_pc_plus_one = MEM_ctrls[4];
+     assign MEM_is_load = MEM_ctrls[3];
+     assign MEM_is_store = MEM_ctrls[2];
+     assign MEM_is_branch = MEM_ctrl[1];
+     assign MEM_is_control_insn = MEM_ctrls[0]; 
+     
+    // Data memory logic (TODO: didn't make any change to logic from single cycle/Do we have to?)
+    assign o_dmem_addr = MEM_is_load ? MEM_alu_result :
+         MEM_is_store ? MEM_alu_result :
+         16'b0;
+    assign o_dmem_towrite = MEM_rt_data;
+    assign o_dmem_we = MEM_is_store;
+
+    // ================================ WRITEBACK Stage ==================================
+    // Wires for [memory to] writeback pipeline register
+    wire [15:0] WB_pc_inc, WB_alu_result, WB_dmem_data;
+    wire [2:0] WB_wsel;
+    
+    Nbit_reg #(16) MW_PCINC (.out(WB_pc_inc), .in(MEM_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     /* You may also use if statements inside the always block
     * to conditionally print out information.
     *
