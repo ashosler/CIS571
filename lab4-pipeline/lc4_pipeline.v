@@ -52,12 +52,11 @@ module lc4_processor
 
     // Stall wires and flush wires
     wire [1:0] fd_stall, de_stall, em_stall, mw_stall;
-    wire fet_flush, fd_flush; // Not sure if we need more
 
 
    // ======================== DECODE Stage ==============================
    // Wires for fetch to decode register
-    wire [15:0] DEC_pc_inc, DEC_insn, pc_inc;
+    wire [15:0] DEC_pc_inc, DEC_insn, pc_inc, DEC_pc;
     wire fd_we;
 
     // Increment pc to pass through registers
@@ -69,8 +68,8 @@ module lc4_processor
     // Register(s) for fetch to decode
     Nbit_reg #(16) FD_PCINC(.in(pc_inc), .out(DEC_pc_inc), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
     Nbit_reg #(16) FD_INSN(.out(DEC_insn), .in(i_cur_insn), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
-    Nbit_reg #(2, 2'b10) (.out(fd_stall), .in(mw_stall), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst)); // NOT SURE if mw_stall should be input here
     Nbit_reg #(1) (.out(fd_flush), .in(fet_flush), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) (.out(DEC_pc), .in(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
     // Wires for decoder
     wire [2:0] r1sel, r2sel, wsel; // 3 3-bit select wires
@@ -106,9 +105,14 @@ module lc4_processor
 		   .i_wdata(rd_data),
 		   .i_rd_we(regfile_we));
 
+    // TODO: implement WD bypass as a mux that sits just after the register file
+    /* You either read the value from the register file, or the value that's
+       currently being written to the register file (from the W stage). */
+    wire wd_bypass_output = use_wd_bypass ? rd_data : rs_data;
+
     // ========================= EXECUTE Stage ===========================
     // Wires for decode to execute pipeline register
-    wire [15:0] EX_pc_inc, EX_rs_data, EX_rt_data, EX_insn; // May not need EX_insn
+    wire [15:0] EX_pc_inc, EX_rs_data, EX_rt_data, EX_insn, EX_pc; // May not need EX_insn (resolved: need to pass insn through wb for test wires)
     wire [2:0] EX_r1sel, EX_r2sel, EX_wsel; // Should we still pass through r1 and r2 sel?
     wire [8:0] EX_ctrls; // control signals concatenated into one wire and output as this
     wire EX_r1re, EX_r2re, EX_regfile_we, EX_nzp_we, EX_select_pc_plus_one,
@@ -118,6 +122,7 @@ module lc4_processor
     Nbit_reg #(16) DE_PCINC (.out(EX_pc_inc), .in(DEC_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     Nbit_reg #(16) DE_RSDATA (.out(EX_rs_data), .in(rs_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     Nbit_reg #(16) DE_RTDATA (.out(EX_rt_data), .in(rt_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) DE_PC (.out(EX_pc), .in(DEC_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
     // Pipeline register for decoded register write select
     Nbit_reg #(16) DE_INSN (.out(EX_insn), .in(DEC_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -147,21 +152,24 @@ module lc4_processor
 
     // =============================== MEMORY Stage =====================================
     // Wires for [execute to] memory pipeline register(s)
-    wire [15:0] MEM_pc_inc, MEM_alu_result, MEM_rt_data;
+    wire [15:0] MEM_pc_inc, MEM_alu_result, MEM_rt_data, MEM_insn, MEM_pc;
     wire [2:0] MEM_wsel;
     wire [8:0] MEM_ctrls;
     wire MEM_r1re, MEM_r2re, MEM_regfile_we, MEM_nzp_we, MEM_select_pc_plus_one,
      MEM_is_load, MEM_is_store, MEM_is_branch, MEM_is_control_insn;
 
     // Pipeline registers [execute to] memory
-    Nbit_reg #(16) EM_PCINC (.out(MEM_pc_inc), .in(EX_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-    Nbit_reg #(16) EM_ALURESULT (.out(MEM_alu_result), .in(alu_result), .clk(clk), .we(1'b1), .gwe(gwe) .rst(rst));
-    Nbit_reg #(16) EM_RTDATA (.out(MEM_rt_data), .in(EX_rt_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) EM_PCinc (.out(MEM_pc_inc), .in(EX_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) EM_ALUResult (.out(MEM_alu_result), .in(alu_result), .clk(clk), .we(1'b1), .gwe(gwe) .rst(rst));
+    Nbit_reg #(16) EM_RTData (.out(MEM_rt_data), .in(EX_rt_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) EM_Insn (.out(MEM_insn), .in(EX_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
-    Nbit_reg #(3) (.out(MEM_wsel), .in(EX_wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) EM_Pc (.out(MEM_pc), .in(EX_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+    Nbit_reg #(3) EM_Wsel (.out(MEM_wsel), .in(EX_wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     
     // Pipeline registers for decoded insn controls from execute to memory
-    Nbit_reg #(9) EM_CTRL_SIGNALS (.out(MEM_ctrls), 
+    Nbit_reg #(9) EM_CTRL_Signals (.out(MEM_ctrls), 
      .in({EX_r1re, EX_r2re, EX_regfile_we, EX_nzp_we, EX_select_pc_plus_one, EX_is_load, EX_is_store, EX_is_branch, EX_is_control_insn}),
      .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
@@ -184,7 +192,8 @@ module lc4_processor
 
     // ================================ WRITEBACK Stage ==================================
     // Wires for [memory to] writeback pipeline register
-    wire [15:0] WB_pc_inc, WB_alu_result, WB_dmem_data;
+    wire [15:0] WB_pc_inc, WB_alu_result, WB_dmem_data, WB_dmem_addr, WB_dmem_towrite, WB_insn, WB_pc;
+    wire WB_dmem_we;
     wire [2:0] WB_wsel;
     wire [8:0] WB_ctrls;
     
@@ -192,14 +201,20 @@ module lc4_processor
      WB_is_load, WB_is_store, WB_is_branch, WB_is_control_insn;
 
     // Register(s) for [memory to] writeback pipeline
-    Nbit_reg #(16) MW_PCINC (.out(WB_pc_inc), .in(MEM_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-    Nbit_reg #(16) MW_ALURESULT (.out(WB_alu_result), .in(MEM_alu_result), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-    Nbit_reg #(16) MW_DMEMDATA (.out(WB_dmem_data), .in(i_cur_dmem_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) MW_PCInc (.out(WB_pc_inc), .in(MEM_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) MW_ALUResult (.out(WB_alu_result), .in(MEM_alu_result), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) MW_DMEMData (.out(WB_dmem_data), .in(i_cur_dmem_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) MW_DMEMAddr (.out(WB_dmem_addr), .in(o_dmem_addr), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) MW_DMEMToWrite (.out(WB_dmem_towrite), .in(o_dmem_towrite), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) MW_Insn (.out(WB_insn), .in(MEM_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
-    Nbit_reg #(3) MW_WSEL (.out(WB_wsel), .in(MEM_wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) MW_Pc (.out(WB_pc), .in(MEM_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+    Nbit_reg #(3) MW_WSel (.out(WB_wsel), .in(MEM_wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(1) MW_DMemWE (.out(WB_dmem_we), .in(o_dmem_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
     // Pipeline registers for decoded insn controls from memory to writeback
-    Nbit_reg #(9) MW_CTRL_SIGNALS (.out(WB_ctrls), 
+    Nbit_reg #(9) MW_CTRL_Signals (.out(WB_ctrls), 
      .in({MEM_r1re, MEM_r2re, MEM_regfile_we, MEM_nzp_we, MEM_select_pc_plus_one, MEM_is_load, MEM_is_store, MEM_is_branch, MEM_is_control_insn}),
      .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
@@ -216,8 +231,23 @@ module lc4_processor
     // Mux to control register input
     assign rd_data = WB_is_load == 1'b1 ? WB_dmem_data : 
          select_pc_plus_one == 1'b1 ? WB_pc_inc :
-         WB_alu_result; // Should this be assigned to rd_data or to another wire?
+         WB_alu_result;
+
+    // TODO: handle NZP functionality and Branching functionality
      
+    // Assign test signals
+    assign test_cur_pc = WB_pc; // The current pc needs to be passed all the way through WB pipeline
+    assign test_cur_insn = WB_insn;
+    assign test_regfile_we = WB_regfile_we;
+    assign test_regfile_wsel = WB_wsel;
+    assign test_regfile_data = rd_data;
+    // TODO: assign test_nzp_we = nzp_we;
+    assign test_dmem_we = WB_dmem_we;
+    assign test_dmem_addr = WB_dmem_addr;
+    assign test_dmem_data = WB_is_load ? WB_dmem_data :
+         WB_is_store ? WB_dmem_towrite :
+         16'b0;
+    // TODO: handle stall logic – assign test_stall = 2'b10;
 
     /* You may also use if statements inside the always block
     * to conditionally print out information.
