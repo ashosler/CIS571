@@ -109,7 +109,7 @@ module lc4_processor
 
     // Use WD bypass when the instruction in writeback stage writes to register that insn in Decode stage wants to read from
     wire use_wd_bypass_rs = ((regfile_we == 1) && (WB_wsel == r1sel) && (DEC_insn != 16'b0)); // assuming nop is 16'b0
-    wire use_wd_bypass_rt = ((WB_wsel == r2sel) && (WB_wsel == r2sel) && (DEC_insn != 16'b0));
+    wire use_wd_bypass_rt = ((regfile_we == 1) && (WB_wsel == r2sel) && (DEC_insn != 16'b0));
 
     /* You either read the value from the register file, or the value that's
        currently being written to the register file (from the W stage). */
@@ -126,12 +126,14 @@ module lc4_processor
 
     // Pipeline register(s) for decode to execute
     Nbit_reg #(16) DE_PCInc (.out(EX_pc_inc), .in(DEC_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-    Nbit_reg #(16) DE_RSData (.out(EX_rs_data), .in(wd_bypass_output), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); // use wd_bypass_output mux result here instead of rs_data?
-    Nbit_reg #(16) DE_RTData (.out(EX_rt_data), .in(rt_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) DE_RSData (.out(EX_rs_data), .in(wd_bypass_rsdata), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); // use wd_bypass_output mux result here instead of rs_data?
+    Nbit_reg #(16) DE_RTData (.out(EX_rt_data), .in(wd_bypass_rtdata), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     Nbit_reg #(16) DE_Pc (.out(EX_pc), .in(DEC_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
     // Pipeline register for decoded register write select
     Nbit_reg #(3) DE_WSel (.out(EX_wsel), .in(wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); // Not sure which wsel to put in here
+    Nbit_reg #(3) DE_R1Sel (.out(EX_r1sel), .in(r1sel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(3) DE_R2Sel (.out(EX_r2sel), .in(r2sel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
     // Pipeline registers for decoded insn controls from decode to execute
     Nbit_reg #(9) DE_CTRL_Signals (.out(EX_ctrls), 
@@ -145,11 +147,11 @@ module lc4_processor
     assign EX_select_pc_plus_one = EX_ctrls[4];
     assign EX_is_load = EX_ctrls[3];
     assign EX_is_store = EX_ctrls[2];
-    assign EX_is_branch = EX_ctrl[1];
+    assign EX_is_branch = EX_ctrls[1];
     assign EX_is_control_insn = EX_ctrls[0];
 
     // Stall logic for input into stall register
-    wire is_stall = (((r1sel == EX_wsel) & r1re) |((r2sel == EX_wsel) & r2re & (!isload))) & EX_is_load;
+    wire is_stall = (((EX_r1sel == EX_wsel) & EX_r1re) |((EX_r2sel == EX_wsel) & EX_r2re & (!EX_is_load))) & EX_is_load;
     wire [1:0] ex_stall_input = is_stall ? 2'b11 :
          DEC_insn == 16'b0 ? 2'b10 : 2'b0;
 
@@ -194,7 +196,7 @@ module lc4_processor
 
     // Pipeline registers [execute to] memory
     Nbit_reg #(16) EM_PCinc (.out(MEM_pc_inc), .in(EX_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-    Nbit_reg #(16) EM_ALUResult (.out(MEM_alu_result), .in(alu_result), .clk(clk), .we(1'b1), .gwe(gwe) .rst(rst));
+    Nbit_reg #(16) EM_ALUResult (.out(MEM_alu_result), .in(alu_result), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     Nbit_reg #(16) EM_RTData (.out(MEM_rt_data), .in(EX_rt_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     Nbit_reg #(16, 16'b0) EM_Insn (.out(MEM_insn), .in(EX_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     Nbit_reg #(16) EM_Pc (.out(MEM_pc), .in(EX_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -213,7 +215,7 @@ module lc4_processor
      assign MEM_select_pc_plus_one = MEM_ctrls[4];
      assign MEM_is_load = MEM_ctrls[3];
      assign MEM_is_store = MEM_ctrls[2];
-     assign MEM_is_branch = MEM_ctrl[1];
+     assign MEM_is_branch = MEM_ctrls[1];
      assign MEM_is_control_insn = MEM_ctrls[0]; 
      
     // Data memory logic (didn't make any change to logic from single cycle/Do we have to?)
@@ -239,7 +241,7 @@ module lc4_processor
     // Wires for [memory to] writeback pipeline register
     wire [15:0] WB_pc_inc, WB_alu_result, WB_dmem_data, WB_dmem_addr, WB_dmem_towrite, WB_insn, WB_pc;
     wire WB_dmem_we;
-    wire [2:0] WB_wsel;
+    wire [2:0] WB_nzp;
     wire [8:0] WB_ctrls;
     
     wire WB_r1re, WB_r2re, WB_regfile_we, WB_nzp_we, WB_select_pc_plus_one,
@@ -271,7 +273,7 @@ module lc4_processor
      assign WB_select_pc_plus_one = WB_ctrls[4];
      assign WB_is_load = WB_ctrls[3];
      assign WB_is_store = WB_ctrls[2];
-     assign WB_is_branch = WB_ctrl[1];
+     assign WB_is_branch = WB_ctrls[1];
      assign WB_is_control_insn = WB_ctrls[0];
 
     // Mux to control register input
