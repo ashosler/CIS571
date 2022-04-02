@@ -1,7 +1,7 @@
 Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 ------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2017.4 (lin64) Build 2086221 Fri Dec 15 20:54:30 MST 2017
-| Date         : Sun Mar 20 21:55:44 2022
+| Date         : Fri Apr  1 21:38:41 2022
 | Host         : big11.seas.upenn.edu running 64-bit openSUSE Leap 15.3
 | Command      : report_drc -file ./output/post_route_drc_report.txt
 | Design       : lc4_system
@@ -24,25 +24,106 @@ Table of Contents
       Design limits: <entire design considered>
            Ruledeck: default
              Max violations: <unlimited>
-             Violations found: 3
-+--------+----------+------------------------+------------+
-| Rule   | Severity | Description            | Violations |
-+--------+----------+------------------------+------------+
-| DPOP-1 | Warning  | PREG Output pipelining | 1          |
-| DPOP-2 | Warning  | MREG Output pipelining | 1          |
-| ZPS7-1 | Warning  | PS7 block required     | 1          |
-+--------+----------+------------------------+------------+
+             Violations found: 19
++-----------+----------+-------------------------+------------+
+| Rule      | Severity | Description             | Violations |
++-----------+----------+-------------------------+------------+
+| DPOP-1    | Warning  | PREG Output pipelining  | 1          |
+| DPOP-2    | Warning  | MREG Output pipelining  | 1          |
+| PDCN-1569 | Warning  | LUT equation term check | 16         |
+| ZPS7-1    | Warning  | PS7 block required      | 1          |
++-----------+----------+-------------------------+------------+
 
 2. REPORT DETAILS
 -----------------
 DPOP-1#1 Warning
 PREG Output pipelining  
-DSP proc_inst/alu/mul_result output proc_inst/alu/mul_result/P[47:0] is not pipelined (PREG=0). Pipelining the DSP48 output will improve performance and often saves power so it is suggested whenever possible to fully pipeline this function.  If this DSP48 function was inferred, it is suggested to describe an additional register stage after this function.  If the DSP48 was instantiated in the design, it is suggested to set the PREG attribute to 1.
+DSP proc_inst/ALU/mul_result output proc_inst/ALU/mul_result/P[47:0] is not pipelined (PREG=0). Pipelining the DSP48 output will improve performance and often saves power so it is suggested whenever possible to fully pipeline this function.  If this DSP48 function was inferred, it is suggested to describe an additional register stage after this function.  If the DSP48 was instantiated in the design, it is suggested to set the PREG attribute to 1.
 Related violations: <none>
 
 DPOP-2#1 Warning
 MREG Output pipelining  
-DSP proc_inst/alu/mul_result multiplier stage proc_inst/alu/mul_result/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+DSP proc_inst/ALU/mul_result multiplier stage proc_inst/ALU/mul_result/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+PDCN-1569#1 Warning
+LUT equation term check  
+Used physical LUT pin 'A1' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_12_ENBWREN_cooolgate_en_gate_9 is not included in the LUT equation: 'O6=(A4)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#2 Warning
+LUT equation term check  
+Used physical LUT pin 'A1' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_1_ENBWREN_cooolgate_en_gate_3 is not included in the LUT equation: 'O6=(A3)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#3 Warning
+LUT equation term check  
+Used physical LUT pin 'A1' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_2_ENBWREN_cooolgate_en_gate_17 is not included in the LUT equation: 'O6=(A4)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#4 Warning
+LUT equation term check  
+Used physical LUT pin 'A1' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_6_ENBWREN_cooolgate_en_gate_25 is not included in the LUT equation: 'O6=(A4)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#5 Warning
+LUT equation term check  
+Used physical LUT pin 'A2' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_10_ENBWREN_cooolgate_en_gate_5 is not included in the LUT equation: 'O6=(A4)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#6 Warning
+LUT equation term check  
+Used physical LUT pin 'A2' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_13_ENBWREN_cooolgate_en_gate_11 is not included in the LUT equation: 'O6=(A4)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#7 Warning
+LUT equation term check  
+Used physical LUT pin 'A2' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_5_ENBWREN_cooolgate_en_gate_23 is not included in the LUT equation: 'O6=(A4)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#8 Warning
+LUT equation term check  
+Used physical LUT pin 'A3' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_0_ENBWREN_cooolgate_en_gate_1 is not included in the LUT equation: 'O6=(A4)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#9 Warning
+LUT equation term check  
+Used physical LUT pin 'A3' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_3_ENBWREN_cooolgate_en_gate_19 is not included in the LUT equation: 'O6=(A4)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#10 Warning
+LUT equation term check  
+Used physical LUT pin 'A3' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_8_ENBWREN_cooolgate_en_gate_29 is not included in the LUT equation: 'O6=(A5)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#11 Warning
+LUT equation term check  
+Used physical LUT pin 'A4' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_4_ENBWREN_cooolgate_en_gate_21 is not included in the LUT equation: 'O6=(A6)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#12 Warning
+LUT equation term check  
+Used physical LUT pin 'A4' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_9_ENBWREN_cooolgate_en_gate_31 is not included in the LUT equation: 'O6=(A3)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#13 Warning
+LUT equation term check  
+Used physical LUT pin 'A5' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_14_ENBWREN_cooolgate_en_gate_13 is not included in the LUT equation: 'O6=(A4)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#14 Warning
+LUT equation term check  
+Used physical LUT pin 'A5' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_15_ENBWREN_cooolgate_en_gate_15 is not included in the LUT equation: 'O6=(A4)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#15 Warning
+LUT equation term check  
+Used physical LUT pin 'A6' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_11_ENBWREN_cooolgate_en_gate_7 is not included in the LUT equation: 'O6=(A2)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
+Related violations: <none>
+
+PDCN-1569#16 Warning
+LUT equation term check  
+Used physical LUT pin 'A6' of cell memory/memory/xlnx_opt_LUT_IDRAM_reg_0_7_ENBWREN_cooolgate_en_gate_27 is not included in the LUT equation: 'O6=(A2)'. If this cell is a user instantiated LUT in the design, please remove connectivity to the pin or change the equation and/or INIT string of the LUT to prevent this issue. If the cell is inferred or IP created LUT, please regenerate the IP and/or resynthesize the design to attempt to correct the issue.
 Related violations: <none>
 
 ZPS7-1#1 Warning

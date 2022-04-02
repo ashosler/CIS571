@@ -1,7 +1,7 @@
 Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2017.4 (lin64) Build 2086221 Fri Dec 15 20:54:30 MST 2017
-| Date             : Sun Mar 20 21:55:37 2022
+| Date             : Fri Apr  1 21:38:38 2022
 | Host             : big11.seas.upenn.edu running 64-bit openSUSE Leap 15.3
 | Command          : report_power -file ./output/post_route_power_report.txt
 | Design           : lc4_system
@@ -33,7 +33,7 @@ Table of Contents
 | Total On-Chip Power (W)  | 0.265        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
-| Dynamic (W)              | 0.155        |
+| Dynamic (W)              | 0.154        |
 | Device Static (W)        | 0.110        |
 | Effective TJA (C/W)      | 11.5         |
 | Max Ambient (C)          | 81.9         |
@@ -53,14 +53,14 @@ Table of Contents
 | On-Chip                 | Power (W) | Used     | Available | Utilization (%) |
 +-------------------------+-----------+----------+-----------+-----------------+
 | Clocks                  |     0.002 |        7 |       --- |             --- |
-| Slice Logic             |     0.002 |     2339 |       --- |             --- |
-|   LUT as Logic          |     0.002 |     1420 |     53200 |            2.67 |
+| Slice Logic             |     0.002 |     2499 |       --- |             --- |
+|   LUT as Logic          |     0.002 |     1453 |     53200 |            2.73 |
 |   CARRY4                |    <0.001 |      112 |     13300 |            0.84 |
-|   Register              |    <0.001 |      421 |    106400 |            0.40 |
-|   F7/F8 Muxes           |    <0.001 |       58 |     53200 |            0.11 |
+|   Register              |    <0.001 |      548 |    106400 |            0.52 |
+|   F7/F8 Muxes           |    <0.001 |       15 |     53200 |            0.03 |
 |   LUT as Shift Register |    <0.001 |        2 |     17400 |            0.01 |
-|   Others                |     0.000 |       89 |       --- |             --- |
-| Signals                 |     0.003 |     1869 |       --- |             --- |
+|   Others                |     0.000 |      110 |       --- |             --- |
+| Signals                 |     0.003 |     2008 |       --- |             --- |
 | Block RAM               |     0.020 |     39.5 |       140 |           28.21 |
 | MMCM                    |     0.122 |        1 |         4 |           25.00 |
 | DSPs                    |    <0.001 |        1 |       220 |            0.45 |
@@ -76,7 +76,7 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) |
 +-----------+-------------+-----------+-------------+------------+
-| Vccint    |       1.000 |     0.034 |       0.025 |      0.009 |
+| Vccint    |       1.000 |     0.033 |       0.024 |      0.009 |
 | Vccaux    |       1.800 |     0.079 |       0.068 |      0.011 |
 | Vcco33    |       3.300 |     0.003 |       0.002 |      0.001 |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |
@@ -156,7 +156,7 @@ Table of Contents
 +-------------------------+-----------+
 | Name                    | Power (W) |
 +-------------------------+-----------+
-| lc4_system              |     0.155 |
+| lc4_system              |     0.154 |
 |   clk_pulse             |    <0.001 |
 |     pulse_reg           |    <0.001 |
 |   fake_kbd_inst         |    <0.001 |
@@ -178,7 +178,7 @@ Table of Contents
 |       i1out_reg         |    <0.001 |
 |   mmcm0                 |     0.123 |
 |   proc_inst             |     0.004 |
-|     alu                 |    <0.001 |
+|     ALU                 |     0.001 |
 |       d0                |    <0.001 |
 |         genblk1[10].d0  |    <0.001 |
 |         genblk1[11].d0  |    <0.001 |
@@ -196,11 +196,31 @@ Table of Contents
 |         genblk1[7].d0   |    <0.001 |
 |         genblk1[8].d0   |    <0.001 |
 |         genblk1[9].d0   |    <0.001 |
-|     decode_to_execute   |     0.003 |
-|     execute_to_memory   |    <0.001 |
-|     fetch_to_decode     |    <0.001 |
-|     pc_reg              |    <0.001 |
-|     register            |    <0.001 |
+|     DE_CTRL_Signals     |    <0.001 |
+|     DE_Insn             |    <0.001 |
+|     DE_PCInc            |    <0.001 |
+|     DE_Pc               |    <0.001 |
+|     DE_R1Sel            |    <0.001 |
+|     DE_RSData           |    <0.001 |
+|     DE_RTData           |     0.002 |
+|     DE_WSel             |    <0.001 |
+|     EM_ALUResult        |    <0.001 |
+|     EM_CTRL_Signals     |    <0.001 |
+|     EM_Insn             |    <0.001 |
+|     EM_PCinc            |    <0.001 |
+|     EM_RTData           |    <0.001 |
+|     EM_Wsel             |    <0.001 |
+|     EM_nzp              |    <0.001 |
+|     FD_Insn             |    <0.001 |
+|     FD_PCInc            |    <0.001 |
+|     FD_Pc               |    <0.001 |
+|     MW_ALUResult        |    <0.001 |
+|     MW_CTRL_Signals     |    <0.001 |
+|     MW_DMEMData         |    <0.001 |
+|     MW_PCInc            |    <0.001 |
+|     MW_WSel             |    <0.001 |
+|     NZP_Reg             |    <0.001 |
+|     RegisterFile        |    <0.001 |
 |       r0                |    <0.001 |
 |       r1                |    <0.001 |
 |       r2                |    <0.001 |
@@ -209,6 +229,7 @@ Table of Contents
 |       r5                |    <0.001 |
 |       r6                |    <0.001 |
 |       r7                |    <0.001 |
+|     pc_reg              |    <0.001 |
 |   timer                 |    <0.001 |
 |     counter_reg         |    <0.001 |
 |     interval_reg        |    <0.001 |
