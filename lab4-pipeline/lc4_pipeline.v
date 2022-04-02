@@ -56,7 +56,7 @@ module lc4_processor
 
    // ======================== DECODE Stage ==============================
    // Decode stall register
-    Nbit_reg #(2, 2'b10) FD_StallReg (.out(dec_stall), .in(1'b0), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst)); // TODO: what should be done about 
+    Nbit_reg #(2, 2'b10) FD_StallReg (.out(dec_stall), .in(wb_stall), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst)); // TODO: what should be done about 
 
    // Wires for fetch to decode register
     wire [15:0] DEC_pc_inc, DEC_insn, pc_inc, DEC_pc;
@@ -69,10 +69,9 @@ module lc4_processor
 	    .sum(pc_inc));
 
     // Register(s) for fetch to decode
-    Nbit_reg #(16) FD_PCINC(.in(pc_inc), .out(DEC_pc_inc), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst)); //TODO: what should th write enable be set to here?
-    Nbit_reg #(16) FD_INSN(.out(DEC_insn), .in(i_cur_insn), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
-    Nbit_reg #(1) (.out(fd_flush), .in(fet_flush), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
-    Nbit_reg #(16) (.out(DEC_pc), .in(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) FD_PCInc(.in(pc_inc), .out(DEC_pc_inc), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst)); //TODO: write enable determined based on the result of stall
+    Nbit_reg #(16, 16'b0) FD_Insn(.out(DEC_insn), .in(i_cur_insn), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16) FD_Pc(.out(DEC_pc), .in(pc), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
 
     // Wires for decoder
     wire [2:0] r1sel, r2sel, wsel, WB_wsel; // 3 3-bit select wires
@@ -118,12 +117,9 @@ module lc4_processor
     wire [15:0] wd_bypass_rtdata = use_wd_bypass_rt ? rd_data : rt_data;
 
     // ========================= EXECUTE Stage ===========================
-    // Stall register for [decode to] execute
-    Nbit_reg #(2, 2'b10) DE_Stall (.out(ex_stall), .in(dec_stall), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
-    
     // Wires for decode to execute pipeline register
     wire [15:0] EX_pc_inc, EX_rs_data, EX_rt_data, EX_insn, EX_pc; // May not need EX_insn (resolved: need to pass insn through wb for test wires)
-    wire [2:0] EX_r1sel, EX_r2sel, EX_wsel; // Should we still pass through r1 and r2 sel?
+    wire [2:0] EX_r1sel, EX_r2sel, EX_wsel; // Should we still pass through r1 and r2 sel? (resolved: yes for stall logic)
     wire [8:0] EX_ctrls; // control signals concatenated into one wire and output as this
     wire EX_r1re, EX_r2re, EX_regfile_we, EX_nzp_we, EX_select_pc_plus_one,
      EX_is_load, EX_is_store, EX_is_branch, EX_is_control_insn;
@@ -135,7 +131,6 @@ module lc4_processor
     Nbit_reg #(16) DE_Pc (.out(EX_pc), .in(DEC_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
     // Pipeline register for decoded register write select
-    Nbit_reg #(16) DE_Insn (.out(EX_insn), .in(DEC_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     Nbit_reg #(3) DE_WSel (.out(EX_wsel), .in(wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); // Not sure which wsel to put in here
 
     // Pipeline registers for decoded insn controls from decode to execute
@@ -153,6 +148,21 @@ module lc4_processor
     assign EX_is_branch = EX_ctrl[1];
     assign EX_is_control_insn = EX_ctrls[0];
 
+    // Stall logic for input into stall register
+    wire is_stall = (((r1sel == EX_wsel) & r1re) |((r2sel == EX_wsel) & r2re & (!isload))) & EX_is_load;
+    wire [1:0] ex_stall_input = is_stall ? 2'b11 :
+         DEC_insn == 16'b0 ? 2'b10 : 2'b0;
+
+    assign pc_we = (ex_stall_input != 0) ? 1'b1 : 1'b0;
+    assign fd_we = (ex_stall_input != 0) ? 1'b1 : 1'b0;
+
+    // Stall register for [decode to] execute
+    Nbit_reg #(2, 2'b10) DE_Stall (.out(ex_stall), .in(ex_stall_input), .clk(clk), .we(fd_we), .gwe(gwe), .rst(rst));
+
+    /* Choose to pass along a nop – 16'b0 – or the previous insn to DE pipeline reg based on the result of stall */
+    wire [15:0] DE_input_insn = (ex_stall_input == 2'b11) ? 16'b0 : DEC_insn;
+    Nbit_reg #(16, 16'b0) DE_Insn (.out(EX_insn), .in(DE_input_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
     // TODO: Not sure where but need to add functionality for sign extend and shift left
     
     // Instantiate ALU (TODO: ALU needs muxes as input)
@@ -161,11 +171,15 @@ module lc4_processor
          .i_r1data(EX_rs_data), .i_r2data(EX_rt_data), .o_result(alu_result));
 
     // NZP register**
-    wire [2:0] nzp, nzp_in;
+    wire [2:0] nzp, nzp_new_bits;
     wire [15:0] sel_nzp;
     assign sel_nzp = EX_is_load ? i_cur_dmem_data :
             EX_insn[15:12] == 4'b1111 ? EX_pc_inc :
             alu_result;
+    assign nzp_new_bits = sel_nzp == 16'b0 ? 3'b010 :
+            sel_nzp[15] == 1'b0 ? 3'b001 : 
+            3'b100;
+    Nbit_reg #(3) NZP_Reg (.out(nzp), .in(nzp_new_bits), .clk(clk), .we(EX_nzp_we), .gwe(gwe), .rst(rst));
 
     // =============================== MEMORY Stage =====================================
     // Stall register for [execute to] memory
@@ -173,7 +187,7 @@ module lc4_processor
 
     // Wires for [execute to] memory pipeline register(s)
     wire [15:0] MEM_pc_inc, MEM_alu_result, MEM_rt_data, MEM_insn, MEM_pc;
-    wire [2:0] MEM_wsel;
+    wire [2:0] MEM_wsel, MEM_nzp;
     wire [8:0] MEM_ctrls;
     wire MEM_r1re, MEM_r2re, MEM_regfile_we, MEM_nzp_we, MEM_select_pc_plus_one,
      MEM_is_load, MEM_is_store, MEM_is_branch, MEM_is_control_insn;
@@ -182,11 +196,10 @@ module lc4_processor
     Nbit_reg #(16) EM_PCinc (.out(MEM_pc_inc), .in(EX_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     Nbit_reg #(16) EM_ALUResult (.out(MEM_alu_result), .in(alu_result), .clk(clk), .we(1'b1), .gwe(gwe) .rst(rst));
     Nbit_reg #(16) EM_RTData (.out(MEM_rt_data), .in(EX_rt_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-    Nbit_reg #(16) EM_Insn (.out(MEM_insn), .in(EX_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-
+    Nbit_reg #(16, 16'b0) EM_Insn (.out(MEM_insn), .in(EX_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     Nbit_reg #(16) EM_Pc (.out(MEM_pc), .in(EX_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-
     Nbit_reg #(3) EM_Wsel (.out(MEM_wsel), .in(EX_wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(3) EM_nzp (.out(MEM_nzp), .in(nzp), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     
     // Pipeline registers for decoded insn controls from execute to memory
     Nbit_reg #(9) EM_CTRL_Signals (.out(MEM_ctrls), 
@@ -203,12 +216,17 @@ module lc4_processor
      assign MEM_is_branch = MEM_ctrl[1];
      assign MEM_is_control_insn = MEM_ctrls[0]; 
      
-    // Data memory logic (TODO: didn't make any change to logic from single cycle/Do we have to?)
+    // Data memory logic (didn't make any change to logic from single cycle/Do we have to?)
     assign o_dmem_addr = MEM_is_load ? MEM_alu_result :
          MEM_is_store ? MEM_alu_result :
          16'b0;
     assign o_dmem_towrite = MEM_rt_data;
     assign o_dmem_we = MEM_is_store;
+
+    // Branch unit
+    wire is_true_branch;
+    wire [2:0] branch_type = MEM_insn[11:9];
+    assign is_true_branch = (nzp == 3'b010)
 
     // ================================ WRITEBACK Stage ==================================
     // Stall register for [memory to] writeback
@@ -234,6 +252,7 @@ module lc4_processor
     Nbit_reg #(16) MW_Pc (.out(WB_pc), .in(MEM_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
     Nbit_reg #(3) MW_WSel (.out(WB_wsel), .in(MEM_wsel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    Nbit_reg #(3) MW_nzp (.out(WB_nzp), .in(MEM_nzp), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     Nbit_reg #(1) MW_DMemWE (.out(WB_dmem_we), .in(o_dmem_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
     // Pipeline registers for decoded insn controls from memory to writeback
@@ -264,14 +283,14 @@ module lc4_processor
     assign test_regfile_we = WB_regfile_we;
     assign test_regfile_wsel = WB_wsel;
     assign test_regfile_data = rd_data;
-    // TODO: assign test_nzp_we = WB_nzp_we;
-    // TODO: assign test_nzp_new_bits = WB_nzp_new_bits
+    assign test_nzp_we = WB_nzp_we;
+    assign test_nzp_new_bits = WB_nzp;
     assign test_dmem_we = WB_dmem_we;
     assign test_dmem_addr = WB_dmem_addr;
     assign test_dmem_data = WB_is_load ? WB_dmem_data :
          WB_is_store ? WB_dmem_towrite :
          16'b0;
-    // TODO: handle stall logic – assign test_stall = 2'b10;
+    assign test_stall = wb_stall;
 
     /* You may also use if statements inside the always block
     * to conditionally print out information.
