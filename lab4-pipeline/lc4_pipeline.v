@@ -226,7 +226,11 @@ module lc4_processor
     // Branch unit
     wire is_true_branch;
     wire [2:0] branch_type = MEM_insn[11:9];
-    assign is_true_branch = (nzp == 3'b010)
+    assign is_true_branch = (MEM_nzp == 3'b010) & (branch_type[1] == 1'b1) ? 1'b1 :
+               (nzp == 3'b001) & (branch_type[0] == 1'b1) ? 1'b1 :
+               (nzp == 3'b100) & (branch_type[2] == 1'b1) ? 1'b1 :
+               1'b0;
+    assign next_pc = (MEM_is_branch & is_true_branch) | MEM_is_control_insn ? MEM_alu_result : MEM_pc_inc;
 
     // ================================ WRITEBACK Stage ==================================
     // Stall register for [memory to] writeback
@@ -274,8 +278,6 @@ module lc4_processor
     assign rd_data = WB_is_load == 1'b1 ? WB_dmem_data : 
          select_pc_plus_one == 1'b1 ? WB_pc_inc :
          WB_alu_result;
-
-    // TODO: handle NZP functionality and Branching functionality
      
     // Assign test signals
     assign test_cur_pc = WB_pc; // The current pc needs to be passed all the way through WB pipeline
