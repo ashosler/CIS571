@@ -37,135 +37,115 @@ module lc4_processor
    
     assign led_data = switch_data;
 
+    assign test_stall = 2'b0; 
+
+    // ======================== Fetch Stage ==============================
     // pc wires attached to the PC register's ports
     wire[15:0] pc;               // Currrent program counter read out from pc_reg
     wire[15:0] next_pc;          // Next program counter (computed and fed into next_pc)
-
-    // Program counter register, starts at 8200h at bootup
-    Nbit_reg #(16, 16'h8200) pc_reg (.in(next_pc), .out(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-
-    // Instantiate fetch to decode register
-   wire [31:0] input_fd, output_fd;
-   wire [15:0] pc_inc, insn_from_fd, pc_from_fd;
-   cla16 c0(.a(pc), .b(16'b0), .cin(1'b1), .sum(pc_inc));
-
-   assign input_fd = {pc_inc, i_cur_insn};
-   Nbit_reg# (32) fetch_to_decode (.in(input_fd), .out(output_fd), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   assign pc_from_fd = output_fd[31:16];
-   assign insn_from_fd = output_fd[15:0];
-   
-   wire[1:0] stall_fd, stall_de, stall_em, stall_mw, stall_w;
-   assign stall_fd = 2'b10;
-   Nbit_reg #(2, 2'b10) fetch_stall_reg (.in(stall_fd), .out(stall_de), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    wire pc_we;
     
-   // Instantiate Decoder w input insn coming from fetch_to_decode
-   wire [2:0] r1sel, r2sel, wsel;
-   wire r1re, r2re, regfile_we, nzp_we, select_pc_plus_one, is_load, is_store, is_branch, is_control_insn;
-   lc4_decoder decoder (.insn(insn_from_fd),
-            .r1sel(r1sel),
-            .r1re(r1re),
-            .r2sel(r2sel),
-            .r2re(r2re),
-            .wsel(wsel),
-            .regfile_we(regfile_we),
-            .nzp_we(nzp_we),
-            .select_pc_plus_one(select_pc_plus_one),
-            .is_load(is_load),
-            .is_store(is_store),
-            .is_branch(is_branch),
-            .is_control_insn(is_control_insn));
-   
-   // Instantiate register file using decoded wires coming from decoder that took insn from fetch_to_decode
-   wire [15:0] rs_data_to_de, rt_data_to_de, rd_data;
-   lc4_regfile register (.clk(clk),
-         .gwe(gwe),
-         .rst(rst),
-         .i_rs(r1sel),
-         .o_rs_data(rs_data_to_de),
-         .i_rt(r2sel),
-         .o_rt_data(rt_data_to_de),
-         .i_rd(wsel),
-         .i_wdata(rd_data),
-         .i_rd_we(regfile_we));
+    // Program counter register should start at 8200 at bootup
+    Nbit_reg #(16, 16'h8200) pc_reg (.in(next_pc), .out(pc), .clk(clk), .we(pc_we), .gwe(gwe), .rst(rst));
+ 
+    // Stall wires and flush wires
+    wire [1:0] dec_stall, ex_stall, mem_stall, wb_stall;
 
-   // Instantiate decode to execute register
-   wire [63:0] input_de, output_de;
-   wire [15:0] pc_from_de, rs_data_from_de, rt_data_from_de, insn_from_de;
-   assign input_de = {pc_from_fd, rs_data_to_de, rt_data_to_de, insn_from_fd};
-   Nbit_reg #(64) decode_to_execute (.in(input_de), 
-         .out(output_de), 
-         .clk(clk),
-         .we(1'b1), 
-         .gwe(gwe), 
-         .rst(rst));
-  
-   Nbit_reg #(2, 2'b10) decode_stall(.in(stall_de), .out(stall_em), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   
-   // Instantiate ALU
-   assign insn_from_de = output_de[15:0];
-   assign pc_from_de = output_de[63:48];
-   assign rs_data_from_de = output_de[47:32];
-   assign rt_data_from_de = output_de[31:16];
-   wire [15:0] alu_result;
-   lc4_alu alu (.i_insn(insn_from_de),
-       .i_pc(pc_from_de),
-       .i_r1data(rs_data_from_de), 
-       .i_r2data(rt_data_from_de), 
-       .o_result(alu_result));
-
-   // Execute to memory register
-   wire[64:0] input_em, output_em;
-   assign input_em = {pc_from_de, 1'b0, alu_result, rt_data_from_de, insn_from_de};
-   Nbit_reg #(65) execute_to_memory (.in(input_em), .out(output_em), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   
-   assign stall_em = (insn_from_de == 16'h0000) ? 2 : 0;
-   Nbit_reg #(2, 2'b10) execute_stall (.in(stall_em), .out(stall_mw), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   wire [15:0] pc_from_em, alu_result_from_em, rt_data_from_em, insn_from_em;
-   assign pc_from_em = output_em[64:49];
-   wire zero = output_em[48];
-   assign alu_result_from_em = output_em[47:32];
-   assign rt_data_from_em = output_em[31:16];
-   assign insn_from_em = output_em[15:0];
-   
-   // Data memory TODO: propogate control signals through registers
-   assign o_dmem_addr = is_load ? alu_result :
-         is_store ? alu_result :
-         16'b0;
-   assign o_dmem_towrite = rt_data_from_em;
-   assign o_dmem_we = is_store;
-
-   // Memory to writeback register
-   wire[47:0] input_mw, output_mw;
-   assign input_mw = {i_cur_dmem_data, alu_result_from_em, insn_from_em};
-   Nbit_reg #(48) memory_to_writeback (.in(input_mw), .out(output_mw), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(2, 2'b10) memory_stall (.in(stall_mw), .out(stall_w), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   wire[15:0] insn_from_mw, alu_result_from_mw;
-
-   // Reg input mux
-   assign rd_data = is_load ? i_cur_dmem_data : 
-          select_pc_plus_one == 1'b1 ? pc_inc :
-          alu_result_from_mw;
-
-
-   // branching
-   assign next_pc = (is_branch) | is_control_insn ? alu_result_from_mw : pc_inc;
-   assign o_cur_pc = pc_from_em;
-
-   // assign test wires
-   assign test_stall = 0;
-   assign test_cur_pc = pc_from_em;
-   assign test_cur_insn = i_cur_insn;
-   assign test_regfile_we = regfile_we;
-   assign test_regfile_wsel = wsel;
-   assign test_regfile_data = rd_data;
-   assign test_nzp_we = 1;
-   assign test_nzp_new_bits = 3'b100;
-   assign test_dmem_we = o_dmem_we;
-   assign test_dmem_addr = o_dmem_addr;
-   assign test_dmem_data = is_load ? i_cur_dmem_data :
-                           is_store ? o_dmem_towrite :
-                           16'b0;
-   
+    // ======================== DECODE Stage ==============================
+    // Decode stall register
+    Nbit_reg #(2, 2'b10) FD_StallReg (.out(dec_stall), .in(wb_stall), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); //TODO: fd_we for stall
+    
+    // Instantiate Decoder
+    wire [2:0] 	 r1sel, r2sel, wsel;
+    wire 	 r1re, r2re, regfile_we, nzp_we, select_pc_plus_one, is_load, is_store, is_branch, is_control_insn;
+    lc4_decoder d0 (.insn(i_cur_insn),
+              .r1sel(r1sel),
+              .r1re(r1re),
+              .r2sel(r2sel),
+              .r2re(r2re),
+              .wsel(wsel),
+              .regfile_we(regfile_we),
+              .nzp_we(nzp_we),
+              .select_pc_plus_one(select_pc_plus_one),
+              .is_load(is_load),
+              .is_store(is_store),
+              .is_branch(is_branch),
+              .is_control_insn(is_control_insn));
+ 
+    // Register Data Wires
+    wire [15:0] 	 rs_data, rt_data, rd_data, alu_result;
+       
+    // Instantiate Register File
+    lc4_regfile f0 (.clk(clk),
+              .gwe(gwe),
+              .rst(rst),
+              .i_rs(r1sel),
+              .o_rs_data(rs_data),
+              .i_rt(r2sel),
+              .o_rt_data(rt_data),
+              .i_rd(wsel),
+              .i_wdata(rd_data),
+              .i_rd_we(regfile_we));
+    
+    // Instantiate ALU                                            
+    lc4_alu a0 (.i_insn(i_cur_insn),
+                .i_pc(pc),
+                .i_r1data(rs_data),
+                .i_r2data(rt_data),
+                .o_result(alu_result));
+    
+    // Data Memory
+    assign o_dmem_addr = is_load ? alu_result :
+                is_store ? alu_result :
+                16'b0;
+    assign o_dmem_towrite = rt_data;
+    assign o_dmem_we = is_store;
+ 
+    // regInputMux 
+    wire 	 [15:0] pc_inc;
+    cla16 c0(.a(pc),
+          .b(16'b0),
+          .cin(1'b1),
+          .sum(pc_inc));
+    assign rd_data = is_load == 1'b1 ? i_cur_dmem_data :
+               select_pc_plus_one == 1'b1 ? pc_inc :
+               alu_result; 
+ 
+    // NZP Register (CMPs nzp_we)
+    wire [2:0] 		nzp, nzp_in;
+    wire [15:0] 		sel_nzp;
+    assign sel_nzp = is_load ? i_cur_dmem_data :
+               i_cur_insn[15:12] == 4'b1111 ? pc_inc : //TRAP (or should it be all control insn?)
+               alu_result;
+    assign nzp_in = sel_nzp == 16'b0 ? 3'b010 :
+              //sel_nzp > 16'b0 ? 3'b001 :
+              sel_nzp[15] == 1'b0 ? 3'b001 :
+              3'b100;
+    Nbit_reg #(3) nzp_reg (.in(nzp_in), .out(nzp), .clk(clk), .we(nzp_we), .gwe(gwe), .rst(rst));
+    
+    // Branch Unit
+    wire	is_true_branch;
+    wire [2:0] branch_type = i_cur_insn[11:9];
+    assign is_true_branch = (nzp == 3'b010) & (branch_type[1] == 1'b1) ? 1'b1: //z
+                   (nzp == 3'b001) & (branch_type[0] == 1'b1) ? 1'b1: //p
+                   (nzp == 3'b100) & (branch_type[2] == 1'b1) ? 1'b1: //n
+                   1'b0;
+    assign next_pc = (is_branch & is_true_branch) | is_control_insn ? alu_result : pc_inc;
+    assign o_cur_pc = pc;
+              
+    // Assign test wires
+    assign test_cur_pc = pc;
+    assign test_cur_insn = i_cur_insn;
+    assign test_regfile_we = regfile_we;
+    assign test_regfile_wsel = wsel;
+    assign test_regfile_data = rd_data;
+    assign test_nzp_we = nzp_we;
+    assign test_nzp_new_bits = nzp_in;
+    assign test_dmem_we = o_dmem_we;
+    assign test_dmem_addr = o_dmem_addr;
+    assign test_dmem_data = is_load ? i_cur_dmem_data :
+                            is_store ? o_dmem_towrite :
+                            16'b0;
 
     /* You may also use if statements inside the always block
     * to conditionally print out information.
