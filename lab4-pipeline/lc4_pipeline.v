@@ -294,7 +294,7 @@ module lc4_processor
     assign test_dmem_data = WB_is_load ? WB_dmem_data :
          WB_is_store ? WB_dmem_towrite :
          16'b0;
-    assign test_stall = wb_stall;
+    assign test_stall = 2'b0;
 
     /* You may also use if statements inside the always block
     * to conditionally print out information.
