@@ -1,7 +1,7 @@
 Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2017.4 (lin64) Build 2086221 Fri Dec 15 20:54:30 MST 2017
-| Date         : Sun Mar 20 21:54:59 2022
+| Date         : Sun Apr  3 21:30:07 2022
 | Host         : big11.seas.upenn.edu running 64-bit openSUSE Leap 15.3
 | Command      : report_timing_summary -file ./output/post_synth_timing_summary_report.txt
 | Design       : lc4_system
@@ -126,10 +126,10 @@ Table of Contents
 
     WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
     -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
-      2.023        0.000                      0                 2233        0.083        0.000                      0                 2233        3.000        0.000                       0                   512  
+     -5.001    -1067.288                    662                 1932        0.083        0.000                      0                 1932        3.000        0.000                       0                   387  
 
 
-All user specified timing constraints are met.
+Timing constraints are not met.
 
 
 ------------------------------------------------------------------------------------------------
@@ -154,7 +154,7 @@ CLOCK_100MHz                          {0.000 5.000}      10.000          100.000
 Clock                                     WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
 -----                                     -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
 CLOCK_100MHz                                                                                                                                                                            3.000        0.000                       0                     1  
-  clk_processor_design_1_clk_wiz_0_0        2.023        0.000                      0                 2047        0.097        0.000                      0                 2047       28.125        0.000                       0                   454  
+  clk_processor_design_1_clk_wiz_0_0       -5.001    -1067.288                    662                 1746        0.142        0.000                      0                 1746       28.125        0.000                       0                   329  
   clk_vga_design_1_clk_wiz_0_0                                                                                                                                                         37.424        0.000                       0                    10  
   clk_vga_inv_design_1_clk_wiz_0_0         35.808        0.000                      0                   62        0.083        0.000                      0                   62       19.020        0.000                       0                    44  
   clkfbout_design_1_clk_wiz_0_0                                                                                                                                                         7.845        0.000                       0                     3  
@@ -215,24 +215,24 @@ High Pulse Width  Fast    MMCME2_ADV/CLKIN1  n/a            2.000         5.000 
 From Clock:  clk_processor_design_1_clk_wiz_0_0
   To Clock:  clk_processor_design_1_clk_wiz_0_0
 
-Setup :            0  Failing Endpoints,  Worst Slack        2.023ns,  Total Violation        0.000ns
-Hold  :            0  Failing Endpoints,  Worst Slack        0.097ns,  Total Violation        0.000ns
+Setup :          662  Failing Endpoints,  Worst Slack       -5.001ns,  Total Violation    -1067.288ns
+Hold  :            0  Failing Endpoints,  Worst Slack        0.142ns,  Total Violation        0.000ns
 PW    :            0  Failing Endpoints,  Worst Slack       28.125ns,  Total Violation        0.000ns
 ---------------------------------------------------------------------------------------------------
 
 
 Max Delay Paths
 --------------------------------------------------------------------------------------
-Slack (MET) :             2.023ns  (required time - arrival time)
-  Source:                 proc_inst/decode_to_execute/state_reg[17]/C
-                            (rising edge-triggered cell FDRE clocked by clk_processor_design_1_clk_wiz_0_0  {rise@0.000ns fall@28.625ns period=57.250ns})
+Slack (VIOLATED) :        -5.001ns  (required time - arrival time)
+  Source:                 memory/memory/IDRAM_reg_0_12/CLKBWRCLK
+                            (rising edge-triggered cell RAMB36E1 clocked by clk_processor_design_1_clk_wiz_0_0  {rise@0.000ns fall@28.625ns period=57.250ns})
   Destination:            timer/counter_reg/state_reg[29]/D
                             (rising edge-triggered cell FDRE clocked by clk_processor_design_1_clk_wiz_0_0  {rise@0.000ns fall@28.625ns period=57.250ns})
   Path Group:             clk_processor_design_1_clk_wiz_0_0
   Path Type:              Setup (Max at Slow Process Corner)
   Requirement:            57.250ns  (clk_processor_design_1_clk_wiz_0_0 rise@57.250ns - clk_processor_design_1_clk_wiz_0_0 rise@0.000ns)
-  Data Path Delay:        55.061ns  (logic 17.511ns (31.803%)  route 37.550ns (68.197%))
-  Logic Levels:           78  (CARRY4=40 LUT2=1 LUT3=1 LUT4=1 LUT5=14 LUT6=20 MUXF7=1)
+  Data Path Delay:        62.086ns  (logic 20.941ns (33.729%)  route 41.145ns (66.271%))
+  Logic Levels:           83  (CARRY4=40 LUT2=1 LUT3=1 LUT4=4 LUT5=16 LUT6=19 MUXF7=1 RAMB36E1=1)
   Clock Path Skew:        -0.145ns (DCD - SCD + CPR)
     Destination Clock Delay (DCD):    -2.229ns = ( 55.021 - 57.250 ) 
     Source Clock Delay      (SCD):    -1.554ns
@@ -254,207 +254,219 @@ Slack (MET) :             2.023ns  (required time - arrival time)
                                                      -5.113    -3.038 r  mmcm0/mmcm_adv_inst/CLKOUT0
                          net (fo=1, unplaced)         0.800    -2.239    mmcm0/clk_processor_design_1_clk_wiz_0_0
                          BUFG (Prop_bufg_I_O)         0.101    -2.138 r  mmcm0/clkout1_buf/O
-                         net (fo=453, unplaced)       0.584    -1.554    proc_inst/decode_to_execute/clk_processor
-                         FDRE                                         r  proc_inst/decode_to_execute/state_reg[17]/C
+                         net (fo=327, unplaced)       0.584    -1.554    memory/memory/clk_processor
+                         RAMB36E1                                     r  memory/memory/IDRAM_reg_0_12/CLKBWRCLK
   -------------------------------------------------------------------    -------------------
-                         FDRE (Prop_fdre_C_Q)         0.478    -1.076 r  proc_inst/decode_to_execute/state_reg[17]/Q
-                         net (fo=56, unplaced)        0.826    -0.250    proc_inst/decode_to_execute/state_reg[64][1]
-                         LUT3 (Prop_lut3_I0_O)        0.319     0.069 r  proc_inst/decode_to_execute/select_carry_i_4/O
-                         net (fo=1, unplaced)         0.000     0.069    proc_inst/alu/d0/genblk1[1].d0/DI[0]
+                         RAMB36E1 (Prop_ramb36e1_CLKBWRCLK_CASCADEOUTB)
+                                                      2.872     1.318 r  memory/memory/IDRAM_reg_0_12/CASCADEOUTB
+                         net (fo=1, unplaced)         0.065     1.383    memory/memory/IDRAM_reg_0_12_n_20
+                         RAMB36E1 (Prop_ramb36e1_CASCADEINB_DOBDO[0])
+                                                      0.425     1.808 f  memory/memory/IDRAM_reg_1_12/DOBDO[0]
+                         net (fo=2, unplaced)         0.800     2.608    memory/memory/i1out_reg/mem_out_i[9]
+                         LUT4 (Prop_lut4_I3_O)        0.124     2.732 r  memory/memory/i1out_reg/state[0]_i_3__2/O
+                         net (fo=159, unplaced)       1.222     3.954    memory/memory/i1out_reg/state[0]_i_3__2_n_0
+                         LUT6 (Prop_lut6_I1_O)        0.124     4.078 r  memory/memory/i1out_reg/mul_result_i_68/O
+                         net (fo=32, unplaced)        0.520     4.598    proc_inst/f0/r2/state_reg[9]_0
+                         LUT6 (Prop_lut6_I4_O)        0.124     4.722 r  proc_inst/f0/r2/mul_result_i_63/O
+                         net (fo=1, unplaced)         0.000     4.722    proc_inst/f0/r6/state_reg[1]_4
+                         MUXF7 (Prop_muxf7_I1_O)      0.247     4.969 r  proc_inst/f0/r6/mul_result_i_15/O
+                         net (fo=60, unplaced)        0.992     5.961    proc_inst/f0/r6/mul_result_12
+                         LUT3 (Prop_lut3_I0_O)        0.322     6.283 r  proc_inst/f0/r6/select_carry_i_4/O
+                         net (fo=1, unplaced)         0.000     6.283    proc_inst/a0/d0/genblk1[1].d0/DI[0]
                          CARRY4 (Prop_carry4_DI[0]_CO[3])
-                                                      0.576     0.645 r  proc_inst/alu/d0/genblk1[1].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009     0.654    proc_inst/alu/d0/genblk1[1].d0/select_carry_n_0
+                                                      0.576     6.859 r  proc_inst/a0/d0/genblk1[1].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009     6.868    proc_inst/a0/d0/genblk1[1].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117     0.771 r  proc_inst/alu/d0/genblk1[1].d0/select_carry__0/CO[3]
-                         net (fo=98, unplaced)        1.017     1.788    proc_inst/decode_to_execute/state_reg[31]_17[0]
-                         LUT6 (Prop_lut6_I2_O)        0.124     1.912 r  proc_inst/decode_to_execute/select_carry_i_4__0/O
-                         net (fo=1, unplaced)         0.333     2.245    proc_inst/alu/d0/genblk1[2].d0/state_reg[23][0]
-                         CARRY4 (Prop_carry4_DI[0]_CO[3])
-                                                      0.550     2.795 r  proc_inst/alu/d0/genblk1[2].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009     2.804    proc_inst/alu/d0/genblk1[2].d0/select_carry_n_0
-                         CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117     2.921 r  proc_inst/alu/d0/genblk1[2].d0/select_carry__0/CO[3]
-                         net (fo=71, unplaced)        1.009     3.930    proc_inst/decode_to_execute/state_reg[31]_16[0]
-                         LUT4 (Prop_lut4_I2_O)        0.116     4.046 f  proc_inst/decode_to_execute/select_carry_i_13__0/O
-                         net (fo=2, unplaced)         0.460     4.506    proc_inst/decode_to_execute/alu/d0/r_i[2]_11[2]
-                         LUT6 (Prop_lut6_I1_O)        0.124     4.630 r  proc_inst/decode_to_execute/select_carry_i_3__1/O
-                         net (fo=1, unplaced)         0.639     5.269    proc_inst/alu/d0/genblk1[3].d0/state_reg[23][1]
+                                                      0.117     6.985 r  proc_inst/a0/d0/genblk1[1].d0/select_carry__0/CO[3]
+                         net (fo=97, unplaced)        1.017     8.002    proc_inst/f0/r6/CO[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124     8.126 r  proc_inst/f0/r6/r_sub_carry_i_3/O
+                         net (fo=2, unplaced)         0.650     8.776    proc_inst/a0/d0/genblk1[2].d0/state_reg[15]_1[1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520     5.789 r  proc_inst/alu/d0/genblk1[3].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009     5.798    proc_inst/alu/d0/genblk1[3].d0/select_carry_n_0
+                                                      0.520     9.296 r  proc_inst/a0/d0/genblk1[2].d0/r_sub_carry/CO[3]
+                         net (fo=1, unplaced)         0.009     9.305    proc_inst/a0/d0/genblk1[2].d0/r_sub_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117     5.915 r  proc_inst/alu/d0/genblk1[3].d0/select_carry__0/CO[3]
-                         net (fo=43, unplaced)        0.997     6.912    proc_inst/decode_to_execute/state_reg[31]_15[0]
-                         LUT5 (Prop_lut5_I3_O)        0.124     7.036 f  proc_inst/decode_to_execute/r_sub_carry_i_1/O
-                         net (fo=8, unplaced)         0.487     7.523    proc_inst/decode_to_execute/IDRAM_reg_1_4_5[1]
-                         LUT6 (Prop_lut6_I1_O)        0.124     7.647 r  proc_inst/decode_to_execute/select_carry_i_3__0/O
-                         net (fo=1, unplaced)         0.639     8.286    proc_inst/alu/d0/genblk1[4].d0/state_reg[23][1]
+                                                      0.117     9.422 r  proc_inst/a0/d0/genblk1[2].d0/r_sub_carry__0/CO[3]
+                         net (fo=1, unplaced)         0.000     9.422    proc_inst/a0/d0/genblk1[2].d0/r_sub_carry__0_n_0
+                         CARRY4 (Prop_carry4_CI_O[2])
+                                                      0.256     9.678 f  proc_inst/a0/d0/genblk1[2].d0/r_sub_carry__1/O[2]
+                         net (fo=5, unplaced)         0.480    10.158    proc_inst/f0/r6/r_sub_10[10]
+                         LUT4 (Prop_lut4_I3_O)        0.293    10.451 f  proc_inst/f0/r6/select_carry__0_i_13__0/O
+                         net (fo=1, unplaced)         0.419    10.870    proc_inst/f0/r6/a0/d0/r_i[2]_11[10]
+                         LUT4 (Prop_lut4_I1_O)        0.124    10.994 r  proc_inst/f0/r6/select_carry__0_i_3__3/O
+                         net (fo=1, unplaced)         0.639    11.633    proc_inst/a0/d0/genblk1[3].d0/state_reg[15][1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520     8.806 r  proc_inst/alu/d0/genblk1[4].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009     8.815    proc_inst/alu/d0/genblk1[4].d0/select_carry_n_0
-                         CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117     8.932 r  proc_inst/alu/d0/genblk1[4].d0/select_carry__0/CO[3]
-                         net (fo=73, unplaced)        1.010     9.942    proc_inst/decode_to_execute/state_reg[31]_14[0]
-                         LUT5 (Prop_lut5_I3_O)        0.124    10.066 f  proc_inst/decode_to_execute/r_sub_carry_i_1__0/O
-                         net (fo=8, unplaced)         0.487    10.553    proc_inst/decode_to_execute/IDRAM_reg_1_15_16[1]
-                         LUT6 (Prop_lut6_I1_O)        0.124    10.677 r  proc_inst/decode_to_execute/select_carry_i_3__3/O
-                         net (fo=1, unplaced)         0.639    11.316    proc_inst/alu/d0/genblk1[5].d0/state_reg[23][1]
+                                                      0.520    12.153 r  proc_inst/a0/d0/genblk1[3].d0/select_carry__0/CO[3]
+                         net (fo=42, unplaced)        0.996    13.149    proc_inst/f0/r6/state_reg[15]_18[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124    13.273 f  proc_inst/f0/r6/r_sub_carry_i_2__1/O
+                         net (fo=8, unplaced)         0.487    13.760    proc_inst/f0/r6/IDRAM_reg_1_5_25
+                         LUT6 (Prop_lut6_I5_O)        0.124    13.884 r  proc_inst/f0/r6/select_carry_i_3__0/O
+                         net (fo=1, unplaced)         0.639    14.523    proc_inst/a0/d0/genblk1[4].d0/state_reg[7][1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520    11.836 r  proc_inst/alu/d0/genblk1[5].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009    11.845    proc_inst/alu/d0/genblk1[5].d0/select_carry_n_0
+                                                      0.520    15.043 r  proc_inst/a0/d0/genblk1[4].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009    15.052    proc_inst/a0/d0/genblk1[4].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    11.962 r  proc_inst/alu/d0/genblk1[5].d0/select_carry__0/CO[3]
-                         net (fo=58, unplaced)        1.004    12.966    proc_inst/decode_to_execute/state_reg[31]_13[0]
-                         LUT5 (Prop_lut5_I3_O)        0.124    13.090 f  proc_inst/decode_to_execute/r_sub_carry_i_1__1/O
-                         net (fo=8, unplaced)         0.487    13.577    proc_inst/decode_to_execute/IDRAM_reg_1_15_1[1]
-                         LUT6 (Prop_lut6_I1_O)        0.124    13.701 r  proc_inst/decode_to_execute/select_carry_i_3__4/O
-                         net (fo=1, unplaced)         0.639    14.340    proc_inst/alu/d0/genblk1[6].d0/state_reg[23][1]
+                                                      0.117    15.169 r  proc_inst/a0/d0/genblk1[4].d0/select_carry__0/CO[3]
+                         net (fo=67, unplaced)        1.008    16.177    proc_inst/f0/r6/state_reg[15]_17[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124    16.301 f  proc_inst/f0/r6/r_sub_carry_i_2__2/O
+                         net (fo=6, unplaced)         0.481    16.782    proc_inst/f0/r6/state_reg[9]_17
+                         LUT6 (Prop_lut6_I5_O)        0.124    16.906 r  proc_inst/f0/r6/select_carry_i_3__3/O
+                         net (fo=1, unplaced)         0.639    17.545    proc_inst/a0/d0/genblk1[5].d0/state_reg[7][1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520    14.860 r  proc_inst/alu/d0/genblk1[6].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009    14.869    proc_inst/alu/d0/genblk1[6].d0/select_carry_n_0
+                                                      0.520    18.065 r  proc_inst/a0/d0/genblk1[5].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009    18.074    proc_inst/a0/d0/genblk1[5].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    14.986 r  proc_inst/alu/d0/genblk1[6].d0/select_carry__0/CO[3]
-                         net (fo=64, unplaced)        1.006    15.992    proc_inst/decode_to_execute/state_reg[31]_12[0]
-                         LUT5 (Prop_lut5_I3_O)        0.124    16.116 f  proc_inst/decode_to_execute/r_sub_carry_i_1__2/O
-                         net (fo=9, unplaced)         0.490    16.606    proc_inst/decode_to_execute/IDRAM_reg_1_3_6[1]
-                         LUT6 (Prop_lut6_I1_O)        0.124    16.730 r  proc_inst/decode_to_execute/select_carry_i_3__5/O
-                         net (fo=1, unplaced)         0.639    17.369    proc_inst/alu/d0/genblk1[7].d0/state_reg[23][1]
+                                                      0.117    18.191 r  proc_inst/a0/d0/genblk1[5].d0/select_carry__0/CO[3]
+                         net (fo=51, unplaced)        1.001    19.192    proc_inst/f0/r6/state_reg[15]_16[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124    19.316 f  proc_inst/f0/r6/r_sub_carry_i_1__1/O
+                         net (fo=4, unplaced)         0.473    19.789    proc_inst/f0/r6/state_reg[9]_31[1]
+                         LUT6 (Prop_lut6_I1_O)        0.124    19.913 r  proc_inst/f0/r6/select_carry_i_3__4/O
+                         net (fo=1, unplaced)         0.639    20.552    proc_inst/a0/d0/genblk1[6].d0/state_reg[7][1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520    17.889 r  proc_inst/alu/d0/genblk1[7].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009    17.898    proc_inst/alu/d0/genblk1[7].d0/select_carry_n_0
+                                                      0.520    21.072 r  proc_inst/a0/d0/genblk1[6].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009    21.081    proc_inst/a0/d0/genblk1[6].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    18.015 r  proc_inst/alu/d0/genblk1[7].d0/select_carry__0/CO[3]
-                         net (fo=61, unplaced)        1.005    19.020    proc_inst/decode_to_execute/state_reg[31]_11[0]
-                         LUT5 (Prop_lut5_I3_O)        0.124    19.144 f  proc_inst/decode_to_execute/r_sub_carry_i_1__3/O
-                         net (fo=9, unplaced)         0.490    19.634    proc_inst/decode_to_execute/IDRAM_reg_1_3_0[1]
-                         LUT6 (Prop_lut6_I1_O)        0.124    19.758 r  proc_inst/decode_to_execute/select_carry_i_3__6/O
-                         net (fo=1, unplaced)         0.639    20.397    proc_inst/alu/d0/genblk1[8].d0/state_reg[23][1]
+                                                      0.117    21.198 r  proc_inst/a0/d0/genblk1[6].d0/select_carry__0/CO[3]
+                         net (fo=54, unplaced)        1.002    22.200    proc_inst/f0/r6/state_reg[15]_15[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124    22.324 f  proc_inst/f0/r6/r_sub_carry_i_1__2/O
+                         net (fo=9, unplaced)         0.490    22.814    proc_inst/f0/r6/state_reg[9]_19
+                         LUT6 (Prop_lut6_I1_O)        0.124    22.938 r  proc_inst/f0/r6/select_carry_i_3__5/O
+                         net (fo=1, unplaced)         0.639    23.577    proc_inst/a0/d0/genblk1[7].d0/state_reg[7][1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520    20.917 r  proc_inst/alu/d0/genblk1[8].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009    20.926    proc_inst/alu/d0/genblk1[8].d0/select_carry_n_0
+                                                      0.520    24.097 r  proc_inst/a0/d0/genblk1[7].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009    24.106    proc_inst/a0/d0/genblk1[7].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    21.043 r  proc_inst/alu/d0/genblk1[8].d0/select_carry__0/CO[3]
-                         net (fo=60, unplaced)        1.005    22.048    proc_inst/decode_to_execute/state_reg[31]_10[0]
-                         LUT5 (Prop_lut5_I3_O)        0.124    22.172 f  proc_inst/decode_to_execute/r_sub_carry_i_1__4/O
-                         net (fo=9, unplaced)         0.490    22.662    proc_inst/decode_to_execute/IDRAM_reg_1_3_5[1]
-                         LUT6 (Prop_lut6_I1_O)        0.124    22.786 r  proc_inst/decode_to_execute/select_carry_i_3__7/O
-                         net (fo=1, unplaced)         0.639    23.425    proc_inst/alu/d0/genblk1[9].d0/state_reg[23][1]
+                                                      0.117    24.223 r  proc_inst/a0/d0/genblk1[7].d0/select_carry__0/CO[3]
+                         net (fo=54, unplaced)        1.002    25.225    proc_inst/f0/r6/state_reg[15]_14[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124    25.349 f  proc_inst/f0/r6/r_sub_carry_i_1__3/O
+                         net (fo=9, unplaced)         0.490    25.839    proc_inst/f0/r6/state_reg[8]_15
+                         LUT6 (Prop_lut6_I1_O)        0.124    25.963 r  proc_inst/f0/r6/select_carry_i_3__6/O
+                         net (fo=1, unplaced)         0.639    26.602    proc_inst/a0/d0/genblk1[8].d0/state_reg[7][1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520    23.945 r  proc_inst/alu/d0/genblk1[9].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009    23.954    proc_inst/alu/d0/genblk1[9].d0/select_carry_n_0
+                                                      0.520    27.122 r  proc_inst/a0/d0/genblk1[8].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009    27.131    proc_inst/a0/d0/genblk1[8].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    24.071 r  proc_inst/alu/d0/genblk1[9].d0/select_carry__0/CO[3]
-                         net (fo=63, unplaced)        1.006    25.077    proc_inst/decode_to_execute/state_reg[31]_9[0]
-                         LUT5 (Prop_lut5_I3_O)        0.124    25.201 f  proc_inst/decode_to_execute/r_sub_carry_i_1__5/O
-                         net (fo=9, unplaced)         0.490    25.691    proc_inst/decode_to_execute/IDRAM_reg_1_4_2[1]
-                         LUT6 (Prop_lut6_I1_O)        0.124    25.815 r  proc_inst/decode_to_execute/select_carry_i_3__8/O
-                         net (fo=1, unplaced)         0.639    26.454    proc_inst/alu/d0/genblk1[10].d0/state_reg[23][1]
+                                                      0.117    27.248 r  proc_inst/a0/d0/genblk1[8].d0/select_carry__0/CO[3]
+                         net (fo=56, unplaced)        1.003    28.251    proc_inst/f0/r6/state_reg[15]_13[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124    28.375 f  proc_inst/f0/r6/r_sub_carry_i_1__4/O
+                         net (fo=9, unplaced)         0.490    28.865    proc_inst/f0/r6/state_reg[7]_20
+                         LUT6 (Prop_lut6_I1_O)        0.124    28.989 r  proc_inst/f0/r6/select_carry_i_3__7/O
+                         net (fo=1, unplaced)         0.639    29.628    proc_inst/a0/d0/genblk1[9].d0/state_reg[7]_0[1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520    26.974 r  proc_inst/alu/d0/genblk1[10].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009    26.983    proc_inst/alu/d0/genblk1[10].d0/select_carry_n_0
+                                                      0.520    30.148 r  proc_inst/a0/d0/genblk1[9].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009    30.157    proc_inst/a0/d0/genblk1[9].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    27.100 r  proc_inst/alu/d0/genblk1[10].d0/select_carry__0/CO[3]
-                         net (fo=61, unplaced)        1.005    28.105    proc_inst/decode_to_execute/state_reg[31]_8[0]
-                         LUT5 (Prop_lut5_I3_O)        0.124    28.229 f  proc_inst/decode_to_execute/r_sub_carry_i_1__6/O
-                         net (fo=9, unplaced)         0.490    28.719    proc_inst/decode_to_execute/VRAM_reg_0_1[1]
-                         LUT6 (Prop_lut6_I1_O)        0.124    28.843 r  proc_inst/decode_to_execute/select_carry_i_3__9/O
-                         net (fo=1, unplaced)         0.639    29.482    proc_inst/alu/d0/genblk1[11].d0/state_reg[23][1]
+                                                      0.117    30.274 r  proc_inst/a0/d0/genblk1[9].d0/select_carry__0/CO[3]
+                         net (fo=58, unplaced)        1.004    31.278    proc_inst/f0/r6/state_reg[15]_12[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124    31.402 f  proc_inst/f0/r6/r_sub_carry_i_1__5/O
+                         net (fo=9, unplaced)         0.490    31.892    proc_inst/f0/r6/state_reg[6]_15
+                         LUT6 (Prop_lut6_I1_O)        0.124    32.016 r  proc_inst/f0/r6/select_carry_i_3__8/O
+                         net (fo=1, unplaced)         0.639    32.655    proc_inst/a0/d0/genblk1[10].d0/state_reg[7][1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520    30.002 r  proc_inst/alu/d0/genblk1[11].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009    30.011    proc_inst/alu/d0/genblk1[11].d0/select_carry_n_0
+                                                      0.520    33.175 r  proc_inst/a0/d0/genblk1[10].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009    33.184    proc_inst/a0/d0/genblk1[10].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    30.128 r  proc_inst/alu/d0/genblk1[11].d0/select_carry__0/CO[3]
-                         net (fo=65, unplaced)        1.007    31.135    proc_inst/decode_to_execute/state_reg[31]_7[0]
-                         LUT5 (Prop_lut5_I3_O)        0.124    31.259 f  proc_inst/decode_to_execute/r_sub_carry_i_1__7/O
-                         net (fo=9, unplaced)         0.490    31.749    proc_inst/decode_to_execute/VRAM_reg_7_0[1]
-                         LUT6 (Prop_lut6_I1_O)        0.124    31.873 r  proc_inst/decode_to_execute/select_carry_i_3__10/O
-                         net (fo=1, unplaced)         0.639    32.512    proc_inst/alu/d0/genblk1[12].d0/state_reg[23][1]
+                                                      0.117    33.301 r  proc_inst/a0/d0/genblk1[10].d0/select_carry__0/CO[3]
+                         net (fo=58, unplaced)        1.004    34.305    proc_inst/f0/r6/state_reg[15]_11[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124    34.429 f  proc_inst/f0/r6/r_sub_carry_i_1__6/O
+                         net (fo=9, unplaced)         0.490    34.919    proc_inst/f0/r6/state_reg[8]_19
+                         LUT6 (Prop_lut6_I1_O)        0.124    35.043 r  proc_inst/f0/r6/select_carry_i_3__9/O
+                         net (fo=1, unplaced)         0.639    35.682    proc_inst/a0/d0/genblk1[11].d0/state_reg[7][1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520    33.032 r  proc_inst/alu/d0/genblk1[12].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009    33.041    proc_inst/alu/d0/genblk1[12].d0/select_carry_n_0
+                                                      0.520    36.202 r  proc_inst/a0/d0/genblk1[11].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009    36.211    proc_inst/a0/d0/genblk1[11].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    33.158 r  proc_inst/alu/d0/genblk1[12].d0/select_carry__0/CO[3]
-                         net (fo=61, unplaced)        1.005    34.163    proc_inst/decode_to_execute/state_reg[31]_6[0]
-                         LUT5 (Prop_lut5_I3_O)        0.124    34.287 f  proc_inst/decode_to_execute/r_sub_carry_i_1__8/O
-                         net (fo=9, unplaced)         0.490    34.777    proc_inst/decode_to_execute/VRAM_reg_7_3[1]
-                         LUT6 (Prop_lut6_I1_O)        0.124    34.901 r  proc_inst/decode_to_execute/select_carry_i_3__11/O
-                         net (fo=1, unplaced)         0.639    35.540    proc_inst/alu/d0/genblk1[13].d0/state_reg[23][1]
+                                                      0.117    36.328 r  proc_inst/a0/d0/genblk1[11].d0/select_carry__0/CO[3]
+                         net (fo=62, unplaced)        1.006    37.334    proc_inst/f0/r6/state_reg[15]_10[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124    37.458 f  proc_inst/f0/r6/r_sub_carry_i_1__7/O
+                         net (fo=9, unplaced)         0.490    37.948    proc_inst/f0/r6/state_reg[7]_23
+                         LUT6 (Prop_lut6_I1_O)        0.124    38.072 r  proc_inst/f0/r6/select_carry_i_3__10/O
+                         net (fo=1, unplaced)         0.639    38.711    proc_inst/a0/d0/genblk1[12].d0/state_reg[7][1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520    36.060 r  proc_inst/alu/d0/genblk1[13].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009    36.069    proc_inst/alu/d0/genblk1[13].d0/select_carry_n_0
+                                                      0.520    39.231 r  proc_inst/a0/d0/genblk1[12].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009    39.240    proc_inst/a0/d0/genblk1[12].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    36.186 r  proc_inst/alu/d0/genblk1[13].d0/select_carry__0/CO[3]
-                         net (fo=62, unplaced)        1.006    37.192    proc_inst/decode_to_execute/state_reg[31]_5[0]
-                         LUT5 (Prop_lut5_I3_O)        0.124    37.316 f  proc_inst/decode_to_execute/r_sub_carry_i_1__9/O
-                         net (fo=9, unplaced)         0.490    37.806    proc_inst/decode_to_execute/IDRAM_reg_1_4_0[1]
-                         LUT6 (Prop_lut6_I1_O)        0.124    37.930 r  proc_inst/decode_to_execute/select_carry_i_3__12/O
-                         net (fo=1, unplaced)         0.639    38.569    proc_inst/alu/d0/genblk1[14].d0/state_reg[23][1]
+                                                      0.117    39.357 r  proc_inst/a0/d0/genblk1[12].d0/select_carry__0/CO[3]
+                         net (fo=60, unplaced)        1.005    40.362    proc_inst/f0/r6/state_reg[15]_9[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124    40.486 f  proc_inst/f0/r6/r_sub_carry_i_1__8/O
+                         net (fo=9, unplaced)         0.490    40.976    proc_inst/f0/r6/state_reg[6]_17
+                         LUT6 (Prop_lut6_I1_O)        0.124    41.100 r  proc_inst/f0/r6/select_carry_i_3__11/O
+                         net (fo=1, unplaced)         0.639    41.739    proc_inst/a0/d0/genblk1[13].d0/state_reg[7][1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520    39.089 r  proc_inst/alu/d0/genblk1[14].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009    39.098    proc_inst/alu/d0/genblk1[14].d0/select_carry_n_0
+                                                      0.520    42.259 r  proc_inst/a0/d0/genblk1[13].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009    42.268    proc_inst/a0/d0/genblk1[13].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    39.215 r  proc_inst/alu/d0/genblk1[14].d0/select_carry__0/CO[3]
-                         net (fo=65, unplaced)        1.007    40.222    proc_inst/decode_to_execute/state_reg[31]_4[0]
-                         LUT5 (Prop_lut5_I3_O)        0.124    40.346 f  proc_inst/decode_to_execute/r_sub_carry_i_1__10/O
-                         net (fo=8, unplaced)         0.487    40.833    proc_inst/decode_to_execute/IDRAM_reg_1_3_9[1]
-                         LUT6 (Prop_lut6_I1_O)        0.124    40.957 r  proc_inst/decode_to_execute/select_carry_i_3__13/O
-                         net (fo=1, unplaced)         0.639    41.596    proc_inst/alu/d0/genblk1[15].d0/state_reg[23][1]
+                                                      0.117    42.385 r  proc_inst/a0/d0/genblk1[13].d0/select_carry__0/CO[3]
+                         net (fo=60, unplaced)        1.005    43.390    proc_inst/f0/r6/state_reg[15]_8[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124    43.514 f  proc_inst/f0/r6/r_sub_carry_i_1__9/O
+                         net (fo=9, unplaced)         0.490    44.004    proc_inst/f0/r6/state_reg[5]_7
+                         LUT6 (Prop_lut6_I1_O)        0.124    44.128 r  proc_inst/f0/r6/select_carry_i_3__12/O
+                         net (fo=1, unplaced)         0.639    44.767    proc_inst/a0/d0/genblk1[14].d0/state_reg[7]_0[1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520    42.116 r  proc_inst/alu/d0/genblk1[15].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009    42.125    proc_inst/alu/d0/genblk1[15].d0/select_carry_n_0
+                                                      0.520    45.287 r  proc_inst/a0/d0/genblk1[14].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009    45.296    proc_inst/a0/d0/genblk1[14].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    42.242 r  proc_inst/alu/d0/genblk1[15].d0/select_carry__0/CO[3]
-                         net (fo=58, unplaced)        1.004    43.246    proc_inst/decode_to_execute/state_reg[31]_3[0]
-                         LUT5 (Prop_lut5_I3_O)        0.124    43.370 f  proc_inst/decode_to_execute/r_sub_carry_i_1__11/O
-                         net (fo=4, unplaced)         0.473    43.843    proc_inst/decode_to_execute/r_i[15]_13[2]
-                         LUT6 (Prop_lut6_I1_O)        0.124    43.967 r  proc_inst/decode_to_execute/select_carry_i_3__14/O
-                         net (fo=1, unplaced)         0.639    44.606    proc_inst/alu/d0/genblk1[16].d0/state_reg[23][1]
+                                                      0.117    45.413 r  proc_inst/a0/d0/genblk1[14].d0/select_carry__0/CO[3]
+                         net (fo=63, unplaced)        1.006    46.419    proc_inst/f0/r6/state_reg[15]_7[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124    46.543 f  proc_inst/f0/r6/r_sub_carry_i_1__10/O
+                         net (fo=8, unplaced)         0.487    47.030    proc_inst/f0/r6/state_reg[7]_25
+                         LUT6 (Prop_lut6_I1_O)        0.124    47.154 r  proc_inst/f0/r6/select_carry_i_3__13/O
+                         net (fo=1, unplaced)         0.639    47.793    proc_inst/a0/d0/genblk1[15].d0/state_reg[7][1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520    45.126 r  proc_inst/alu/d0/genblk1[16].d0/select_carry/CO[3]
-                         net (fo=1, unplaced)         0.009    45.135    proc_inst/alu/d0/genblk1[16].d0/select_carry_n_0
+                                                      0.520    48.313 r  proc_inst/a0/d0/genblk1[15].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009    48.322    proc_inst/a0/d0/genblk1[15].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    45.252 r  proc_inst/alu/d0/genblk1[16].d0/select_carry__0/CO[3]
-                         net (fo=5, unplaced)         0.946    46.198    proc_inst/decode_to_execute/state_reg[30]_0[0]
-                         LUT2 (Prop_lut2_I0_O)        0.124    46.322 f  proc_inst/decode_to_execute/IDRAM_reg_0_0_i_218/O
-                         net (fo=15, unplaced)        0.955    47.277    proc_inst/decode_to_execute/IDRAM_reg_0_0_i_218_n_0
-                         LUT6 (Prop_lut6_I0_O)        0.124    47.401 f  proc_inst/decode_to_execute/IDRAM_reg_0_0_i_321/O
-                         net (fo=1, unplaced)         0.449    47.850    proc_inst/decode_to_execute/alu/mod_result[12]
-                         LUT5 (Prop_lut5_I0_O)        0.124    47.974 f  proc_inst/decode_to_execute/IDRAM_reg_0_0_i_178/O
-                         net (fo=1, unplaced)         0.000    47.974    proc_inst/decode_to_execute/IDRAM_reg_0_0_i_178_n_0
-                         MUXF7 (Prop_muxf7_I1_O)      0.247    48.221 f  proc_inst/decode_to_execute/IDRAM_reg_0_0_i_92/O
-                         net (fo=1, unplaced)         0.452    48.673    proc_inst/decode_to_execute/IDRAM_reg_0_0_i_92_n_0
-                         LUT6 (Prop_lut6_I1_O)        0.298    48.971 f  proc_inst/decode_to_execute/IDRAM_reg_0_0_i_43/O
-                         net (fo=3, unplaced)         0.467    49.438    proc_inst/decode_to_execute/IDRAM_reg_0_0_i_43_n_0
-                         LUT6 (Prop_lut6_I4_O)        0.124    49.562 f  proc_inst/decode_to_execute/IDRAM_reg_0_0_i_5/O
-                         net (fo=18, unplaced)        0.959    50.521    proc_inst/decode_to_execute/ADDRARDADDR[10]
-                         LUT6 (Prop_lut6_I3_O)        0.124    50.645 f  proc_inst/decode_to_execute/state[15]_i_3/O
-                         net (fo=49, unplaced)        0.531    51.176    proc_inst/decode_to_execute/state_reg[0]_0
-                         LUT6 (Prop_lut6_I3_O)        0.124    51.300 r  proc_inst/decode_to_execute/state[0]_i_4/O
-                         net (fo=1, unplaced)         0.639    51.939    proc_inst/decode_to_execute/state[0]_i_4_n_0
+                                                      0.117    48.439 r  proc_inst/a0/d0/genblk1[15].d0/select_carry__0/CO[3]
+                         net (fo=56, unplaced)        1.003    49.442    proc_inst/f0/r6/state_reg[15]_5[0]
+                         LUT5 (Prop_lut5_I3_O)        0.124    49.566 f  proc_inst/f0/r6/r_sub_carry_i_1__11/O
+                         net (fo=4, unplaced)         0.473    50.039    proc_inst/f0/r6/VRAM_reg_7_0
+                         LUT6 (Prop_lut6_I1_O)        0.124    50.163 r  proc_inst/f0/r6/select_carry_i_3__14/O
+                         net (fo=1, unplaced)         0.639    50.802    proc_inst/a0/d0/genblk1[16].d0/state_reg[7][1]
                          CARRY4 (Prop_carry4_DI[1]_CO[3])
-                                                      0.520    52.459 r  proc_inst/decode_to_execute/state_reg[0]_i_1/CO[3]
-                         net (fo=1, unplaced)         0.009    52.468    proc_inst/decode_to_execute/state_reg[0]_i_1_n_0
+                                                      0.520    51.322 r  proc_inst/a0/d0/genblk1[16].d0/select_carry/CO[3]
+                         net (fo=1, unplaced)         0.009    51.331    proc_inst/a0/d0/genblk1[16].d0/select_carry_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    52.585 r  proc_inst/decode_to_execute/state_reg[4]_i_1/CO[3]
-                         net (fo=1, unplaced)         0.000    52.585    proc_inst/decode_to_execute/state_reg[4]_i_1_n_0
+                                                      0.117    51.448 r  proc_inst/a0/d0/genblk1[16].d0/select_carry__0/CO[3]
+                         net (fo=5, unplaced)         0.946    52.394    proc_inst/f0/r6/state_reg[14]_42[0]
+                         LUT2 (Prop_lut2_I0_O)        0.124    52.518 f  proc_inst/f0/r6/IDRAM_reg_0_0_i_175/O
+                         net (fo=14, unplaced)        0.953    53.471    proc_inst/f0/r6/state_reg[14]_0
+                         LUT6 (Prop_lut6_I0_O)        0.124    53.595 f  proc_inst/f0/r6/state[13]_i_11/O
+                         net (fo=1, unplaced)         0.449    54.044    memory/memory/i1out_reg/state_reg[4]_9
+                         LUT5 (Prop_lut5_I1_O)        0.124    54.168 f  memory/memory/i1out_reg/state[13]_i_5/O
+                         net (fo=1, unplaced)         0.449    54.617    memory/memory/i1out_reg/state[13]_i_5_n_0
+                         LUT6 (Prop_lut6_I3_O)        0.124    54.741 f  memory/memory/i1out_reg/state[13]_i_2/O
+                         net (fo=5, unplaced)         0.477    55.218    memory/memory/i1out_reg/state_reg[13]_0
+                         LUT4 (Prop_lut4_I3_O)        0.124    55.342 r  memory/memory/i1out_reg/IDRAM_reg_0_0_i_40/O
+                         net (fo=6, unplaced)         1.143    56.485    memory/memory/i1out_reg/IDRAM_reg_0_0_i_40_n_0
+                         LUT6 (Prop_lut6_I0_O)        0.124    56.609 r  memory/memory/i1out_reg/state[15]_i_10/O
+                         net (fo=5, unplaced)         0.930    57.539    memory/memory/i1out_reg/state[15]_i_10_n_0
+                         LUT6 (Prop_lut6_I1_O)        0.124    57.663 f  memory/memory/i1out_reg/state[15]_i_3__1/O
+                         net (fo=65, unplaced)        0.538    58.201    memory/memory/i1out_reg/state_reg[0]_5
+                         LUT5 (Prop_lut5_I3_O)        0.124    58.325 r  memory/memory/i1out_reg/state[0]_i_4__0/O
+                         net (fo=1, unplaced)         0.639    58.964    memory/memory/i1out_reg/state[0]_i_4__0_n_0
+                         CARRY4 (Prop_carry4_DI[1]_CO[3])
+                                                      0.520    59.484 r  memory/memory/i1out_reg/state_reg[0]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.009    59.493    memory/memory/i1out_reg/state_reg[0]_i_1_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    52.702 r  proc_inst/decode_to_execute/state_reg[8]_i_1/CO[3]
-                         net (fo=1, unplaced)         0.000    52.702    proc_inst/fetch_to_decode/CO[0]
+                                                      0.117    59.610 r  memory/memory/i1out_reg/state_reg[4]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000    59.610    memory/memory/i1out_reg/state_reg[4]_i_1_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    52.819 r  proc_inst/fetch_to_decode/state_reg[12]_i_1/CO[3]
-                         net (fo=1, unplaced)         0.000    52.819    proc_inst/fetch_to_decode/state_reg[12]_i_1_n_0
+                                                      0.117    59.727 r  memory/memory/i1out_reg/state_reg[8]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000    59.727    timer/counter_reg/state_reg[11]_2[0]
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    52.936 r  proc_inst/fetch_to_decode/state_reg[16]_i_1/CO[3]
-                         net (fo=1, unplaced)         0.000    52.936    proc_inst/fetch_to_decode/state_reg[16]_i_1_n_0
+                                                      0.117    59.844 r  timer/counter_reg/state_reg[12]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000    59.844    timer/counter_reg/state_reg[12]_i_1_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    53.053 r  proc_inst/fetch_to_decode/state_reg[20]_i_1/CO[3]
-                         net (fo=1, unplaced)         0.000    53.053    proc_inst/fetch_to_decode/state_reg[20]_i_1_n_0
+                                                      0.117    59.961 r  timer/counter_reg/state_reg[16]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000    59.961    timer/counter_reg/state_reg[16]_i_1_n_0
                          CARRY4 (Prop_carry4_CI_CO[3])
-                                                      0.117    53.170 r  proc_inst/fetch_to_decode/state_reg[24]_i_1/CO[3]
-                         net (fo=1, unplaced)         0.000    53.170    proc_inst/fetch_to_decode/state_reg[24]_i_1_n_0
+                                                      0.117    60.078 r  timer/counter_reg/state_reg[20]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000    60.078    timer/counter_reg/state_reg[20]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    60.195 r  timer/counter_reg/state_reg[24]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000    60.195    memory/memory/i1out_reg/state_reg[14]_7[0]
                          CARRY4 (Prop_carry4_CI_O[1])
-                                                      0.337    53.507 r  proc_inst/fetch_to_decode/state_reg[28]_i_1/O[1]
-                         net (fo=1, unplaced)         0.000    53.507    timer/counter_reg/state_reg[30]_0[1]
+                                                      0.337    60.532 r  memory/memory/i1out_reg/state_reg[28]_i_1/O[1]
+                         net (fo=1, unplaced)         0.000    60.532    timer/counter_reg/state_reg[30]_0[1]
                          FDRE                                         r  timer/counter_reg/state_reg[29]/D
   -------------------------------------------------------------------    -------------------
 
@@ -468,16 +480,16 @@ Slack (MET) :             2.023ns  (required time - arrival time)
                                                      -5.378    53.731 r  mmcm0/mmcm_adv_inst/CLKOUT0
                          net (fo=1, unplaced)         0.760    54.491    mmcm0/clk_processor_design_1_clk_wiz_0_0
                          BUFG (Prop_bufg_I_O)         0.091    54.582 r  mmcm0/clkout1_buf/O
-                         net (fo=453, unplaced)       0.439    55.021    timer/counter_reg/clk_processor
+                         net (fo=327, unplaced)       0.439    55.021    timer/counter_reg/clk_processor
                          FDRE                                         r  timer/counter_reg/state_reg[29]/C
                          clock pessimism              0.531    55.551    
                          clock uncertainty           -0.097    55.455    
                          FDRE (Setup_fdre_C_D)        0.076    55.531    timer/counter_reg/state_reg[29]
   -------------------------------------------------------------------
                          required time                         55.531    
-                         arrival time                         -53.507    
+                         arrival time                         -60.532    
   -------------------------------------------------------------------
-                         slack                                  2.023    
+                         slack                                 -5.001    
 
 
 
@@ -485,16 +497,16 @@ Slack (MET) :             2.023ns  (required time - arrival time)
 
 Min Delay Paths
 --------------------------------------------------------------------------------------
-Slack (MET) :             0.097ns  (arrival time - required time)
-  Source:                 proc_inst/execute_to_memory/state_reg[16]/C
+Slack (MET) :             0.142ns  (arrival time - required time)
+  Source:                 fake_kbd_inst/op_d/state_reg/state_reg[1]/C
                             (rising edge-triggered cell FDRE clocked by clk_processor_design_1_clk_wiz_0_0  {rise@0.000ns fall@28.625ns period=57.250ns})
-  Destination:            memory/memory/VRAM_reg_0/DIADI[0]
-                            (rising edge-triggered cell RAMB36E1 clocked by clk_processor_design_1_clk_wiz_0_0  {rise@0.000ns fall@28.625ns period=57.250ns})
+  Destination:            fake_kbd_inst/op_d/state_reg/state_reg[1]/D
+                            (rising edge-triggered cell FDRE clocked by clk_processor_design_1_clk_wiz_0_0  {rise@0.000ns fall@28.625ns period=57.250ns})
   Path Group:             clk_processor_design_1_clk_wiz_0_0
   Path Type:              Hold (Min at Fast Process Corner)
   Requirement:            0.000ns  (clk_processor_design_1_clk_wiz_0_0 rise@0.000ns - clk_processor_design_1_clk_wiz_0_0 rise@0.000ns)
-  Data Path Delay:        0.484ns  (logic 0.147ns (30.366%)  route 0.337ns (69.634%))
-  Logic Levels:           0  
+  Data Path Delay:        0.386ns  (logic 0.245ns (63.437%)  route 0.141ns (36.563%))
+  Logic Levels:           1  (LUT2=1)
   Clock Path Skew:        0.145ns (DCD - SCD - CPR)
     Destination Clock Delay (DCD):    -1.062ns
     Source Clock Delay      (SCD):    -0.927ns
@@ -512,12 +524,14 @@ Slack (MET) :             0.097ns  (arrival time - required time)
                                                      -1.776    -1.404 r  mmcm0/mmcm_adv_inst/CLKOUT0
                          net (fo=1, unplaced)         0.337    -1.067    mmcm0/clk_processor_design_1_clk_wiz_0_0
                          BUFG (Prop_bufg_I_O)         0.026    -1.041 r  mmcm0/clkout1_buf/O
-                         net (fo=453, unplaced)       0.114    -0.927    proc_inst/execute_to_memory/clk_processor
-                         FDRE                                         r  proc_inst/execute_to_memory/state_reg[16]/C
+                         net (fo=327, unplaced)       0.114    -0.927    fake_kbd_inst/op_d/state_reg/clk_processor
+                         FDRE                                         r  fake_kbd_inst/op_d/state_reg/state_reg[1]/C
   -------------------------------------------------------------------    -------------------
-                         FDRE (Prop_fdre_C_Q)         0.147    -0.780 r  proc_inst/execute_to_memory/state_reg[16]/Q
-                         net (fo=4, unplaced)         0.337    -0.443    memory/memory/dmem_in[0]
-                         RAMB36E1                                     r  memory/memory/VRAM_reg_0/DIADI[0]
+                         FDRE (Prop_fdre_C_Q)         0.147    -0.780 f  fake_kbd_inst/op_d/state_reg/state_reg[1]/Q
+                         net (fo=4, unplaced)         0.141    -0.639    fake_kbd_inst/op_d/state_reg/state_0[1]
+                         LUT2 (Prop_lut2_I1_O)        0.098    -0.541 r  fake_kbd_inst/op_d/state_reg/state[1]_i_1__4/O
+                         net (fo=1, unplaced)         0.000    -0.541    fake_kbd_inst/op_d/state_reg/next_state[1]
+                         FDRE                                         r  fake_kbd_inst/op_d/state_reg/state_reg[1]/D
   -------------------------------------------------------------------    -------------------
 
                          (clock clk_processor_design_1_clk_wiz_0_0 rise edge)
@@ -530,16 +544,15 @@ Slack (MET) :             0.097ns  (arrival time - required time)
                                                      -2.410    -1.705 r  mmcm0/mmcm_adv_inst/CLKOUT0
                          net (fo=1, unplaced)         0.355    -1.350    mmcm0/clk_processor_design_1_clk_wiz_0_0
                          BUFG (Prop_bufg_I_O)         0.029    -1.321 r  mmcm0/clkout1_buf/O
-                         net (fo=453, unplaced)       0.259    -1.062    memory/memory/clk_processor
-                         RAMB36E1                                     r  memory/memory/VRAM_reg_0/CLKARDCLK
+                         net (fo=327, unplaced)       0.259    -1.062    fake_kbd_inst/op_d/state_reg/clk_processor
+                         FDRE                                         r  fake_kbd_inst/op_d/state_reg/state_reg[1]/C
                          clock pessimism              0.280    -0.782    
-                         RAMB36E1 (Hold_ramb36e1_CLKARDCLK_DIADI[0])
-                                                      0.242    -0.540    memory/memory/VRAM_reg_0
+                         FDRE (Hold_fdre_C_D)         0.099    -0.683    fake_kbd_inst/op_d/state_reg/state_reg[1]
   -------------------------------------------------------------------
-                         required time                          0.540    
-                         arrival time                          -0.443    
+                         required time                          0.683    
+                         arrival time                          -0.541    
   -------------------------------------------------------------------
-                         slack                                  0.097    
+                         slack                                  0.142    
 
 
 
@@ -555,8 +568,8 @@ Sources:            { mmcm0/mmcm_adv_inst/CLKOUT0 }
 Check Type        Corner  Lib Pin             Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location  Pin
 Min Period        n/a     RAMB36E1/CLKARDCLK  n/a            3.363         57.250      53.887               memory/memory/IDRAM_reg_0_13/CLKARDCLK
 Max Period        n/a     MMCME2_ADV/CLKOUT0  n/a            213.360       57.250      156.110              mmcm0/mmcm_adv_inst/CLKOUT0
-Low Pulse Width   Fast    FDRE/C              n/a            0.500         28.625      28.125               clk_pulse/pulse_reg/state_reg[0]/C
-High Pulse Width  Slow    FDRE/C              n/a            0.500         28.625      28.125               clk_pulse/pulse_reg/state_reg[0]/C
+Low Pulse Width   Fast    FDRE/C              n/a            0.500         28.625      28.125               proc_inst/f0/r0/state_reg[0]/C
+High Pulse Width  Slow    FDRE/C              n/a            0.500         28.625      28.125               proc_inst/f0/r0/state_reg[0]/C
 
 
 
@@ -810,7 +823,7 @@ Slack (MET) :             16.660ns  (required time - arrival time)
   -------------------------------------------------------------------    -------------------
                          FDRE (Prop_fdre_C_Q)         0.478    18.924 r  vga_cntrl_inst/svga_t_g/PIXEL_COUNT_reg[6]/Q
                          net (fo=16, unplaced)        0.795    19.719    vga_cntrl_inst/svga_t_g/pixel_count[6]
-                         LUT3 (Prop_lut3_I0_O)        0.295    20.014 r  vga_cntrl_inst/svga_t_g/VRAM_reg_0_i_13/O
+                         LUT3 (Prop_lut3_I0_O)        0.295    20.014 r  vga_cntrl_inst/svga_t_g/VRAM_reg_0_i_16/O
                          net (fo=8, unplaced)         0.800    20.814    memory/memory/vaddr[6]
                          RAMB36E1                                     r  memory/memory/VRAM_reg_0/ADDRBWRADDR[7]
   -------------------------------------------------------------------    -------------------

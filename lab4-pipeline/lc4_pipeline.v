@@ -46,7 +46,7 @@ module lc4_processor
     wire pc_we;
     
     // Program counter register should start at 8200 at bootup
-    Nbit_reg #(16, 16'h8200) pc_reg (.in(next_pc), .out(pc), .clk(clk), .we(pc_we), .gwe(gwe), .rst(rst));
+    Nbit_reg #(16, 16'h8200) pc_reg (.in(next_pc), .out(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
  
     // Stall wires and flush wires
     wire [1:0] dec_stall, ex_stall, mem_stall, wb_stall;
