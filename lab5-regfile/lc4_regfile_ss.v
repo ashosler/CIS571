@@ -42,7 +42,7 @@ module lc4_regfile_ss #(parameter n = 16)
    /*** TODO: Your Code Here ***/
    // wires for the output of each register
    wire [n-1:0] reg0_out;
-   wire [2:0] reg0_in;
+   wire [n-1:0] reg0_in;
    wire reg0_we;
 
    // When registers being written to conflict, B gets priority
@@ -56,20 +56,7 @@ module lc4_regfile_ss #(parameter n = 16)
          .out(reg0_out),
          .clk(clk), .we(reg0_we),
          .gwe(gwe), .rst(rst));
-   
 
-   // bypass inputs to outputs should this take conflicts b/w A and B into account??
-   assign o_rs_data_A = ((i_rs_A == 3'd0) & ((i_rd_A == 3'd0) & i_rd_we_A)) ? reg0_in :
-                        reg0_out;
-   
-   assign o_rs_data_B = ((i_rs_B == 3'd0) & ((i_rd_B == 3'd0) & i_rd_we_B)) ? reg0_in :
-                        reg0_out;
-   
-   assign o_rt_data_A = ((i_rt_A == 3'd0) & ((i_rd_A == 3'd0) & i_rd_we_A)) ? reg0_in :
-                        reg0_out; 
-
-   assign o_rt_data_B = ((i_rt_B == 3'd0) & ((i_rd_B == 3'd0) & i_rd_we_B)) ? reg0_in :
-                        reg0_out;
 
    // Nbit_reg #(n) reg1 (.in(),
    //       .out(),
@@ -99,4 +86,17 @@ module lc4_regfile_ss #(parameter n = 16)
    //       .out(), 
    //       .clk(clk), .we(),
    //       .gwe(gwe), .rst(rst));
+
+         // bypass inputs to outputs should this take conflicts b/w A and B into account??
+   assign o_rs_data_A = ((i_rs_A == 3'd0) & ((i_rd_A == 3'd0) & i_rd_we_A)) ? reg0_in :
+                           reg0_out;
+
+   assign o_rs_data_B = ((i_rs_B == 3'd0) & ((i_rd_B == 3'd0) & i_rd_we_B)) ? reg0_in :
+                        reg0_out;
+
+   assign o_rt_data_A = ((i_rt_A == 3'd0) & ((i_rd_A == 3'd0) & i_rd_we_A)) ? reg0_in :
+                        reg0_out; 
+
+   assign o_rt_data_B = ((i_rt_B == 3'd0) & ((i_rd_B == 3'd0) & i_rd_we_B)) ? reg0_in :
+                        reg0_out;
 endmodule
