@@ -60,7 +60,16 @@ module lc4_regfile_ss #(parameter n = 16)
 
    // bypass inputs to outputs should this take conflicts b/w A and B into account??
    assign o_rs_data_A = ((i_rs_A == 3'd0) & ((i_rd_A == 3'd0) & i_rd_we_A)) ? reg0_in :
-                        (i_rs_A == 3'd0) ? reg0_out;
+                        reg0_out;
+   
+   assign o_rs_data_B = ((i_rs_B == 3'd0) & ((i_rd_B == 3'd0) & i_rd_we_B)) ? reg0_in :
+                        reg0_out;
+   
+   assign o_rt_data_A = ((i_rt_A == 3'd0) & ((i_rd_A == 3'd0) & i_rd_we_A)) ? reg0_in :
+                        reg0_out; 
+
+   assign o_rt_data_B = ((i_rt_B == 3'd0) & ((i_rd_B == 3'd0) & i_rd_we_B)) ? reg0_in :
+                        reg0_out;
 
    // Nbit_reg #(n) reg1 (.in(),
    //       .out(),
