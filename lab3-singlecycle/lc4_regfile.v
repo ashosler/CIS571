@@ -25,6 +25,7 @@ module lc4_regfile #(parameter n = 16)
     );
 
    wire [n-1:0] r0v, r1v, r2v, r3v, r4v, r5v, r6v, r7v;
+   
    //create all 8 registers
    Nbit_reg #(n) r0 (.in(i_wdata),
 		     .out(r0v),

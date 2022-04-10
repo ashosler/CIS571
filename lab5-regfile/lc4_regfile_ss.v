@@ -40,5 +40,54 @@ module lc4_regfile_ss #(parameter n = 16)
     );
 
    /*** TODO: Your Code Here ***/
+   // wires for the output of each register
+   wire [n-1:0] reg0_out;
+   wire [2:0] reg0_in;
+   wire reg0_we;
 
+   // When registers being written to conflict, B gets priority
+   assign reg0_in = (i_rd_B == 3'd0) ? i_wdata_B : i_wdata_A;
+
+   assign reg0_we = (((i_rd_B == 3'd0) & i_rd_we_B) | 
+                     ((i_rd_A == 3'd0) & i_rd_we_A));
+   
+   // Registers instantiated
+   Nbit_reg #(n) reg0 (.in(reg0_in),
+         .out(reg0_out),
+         .clk(clk), .we(reg0_we),
+         .gwe(gwe), .rst(rst));
+   
+
+   // bypass inputs to outputs should this take conflicts b/w A and B into account??
+   assign o_rs_data_A = ((i_rs_A == 3'd0) & ((i_rd_A == 3'd0) & i_rd_we_A)) ? reg0_in :
+                        (i_rs_A == 3'd0) ? reg0_out;
+
+   // Nbit_reg #(n) reg1 (.in(),
+   //       .out(),
+   //       .clk(clk), .we(),
+   //       .gwe(gwe), .rst(rst));
+   // Nbit_reg #(n) reg2 (.in(),
+   //       .out(),
+   //       .clk(clk), .we(),
+   //       .gwe(gwe), .rst(rst));
+   // Nbit_reg #(n) reg3 (.in(),
+   //       .out(),
+   //       .clk(clk), .we(),
+   //       .gwe(gwe), .rst(rst));
+   // Nbit_reg #(n) reg4 (.in(),
+   //       .out(),
+   //       .clk(clk), .we(),
+   //       .gwe(gwe), .rst(rst));
+   // Nbit_reg #(n) reg5 (.in(),
+   //       .out(), 
+   //       .clk(clk), .we(),
+   //       .gwe(gwe), .rst(rst));
+   // Nbit_reg #(n) reg6 (.in(), 
+   //       .out(), 
+   //       .clk(clk), .we(),
+   //       .gwe(gwe), .rst(rst));
+   // Nbit_reg #(n) reg7 (.in(), 
+   //       .out(), 
+   //       .clk(clk), .we(),
+   //       .gwe(gwe), .rst(rst));
 endmodule
