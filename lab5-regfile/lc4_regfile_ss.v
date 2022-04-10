@@ -126,7 +126,21 @@ module lc4_regfile_ss #(parameter n = 16)
                          reg7_out;
 
    assign o_rs_data_B = ((i_rs_B == 3'd0) & ((i_rd_B == 3'd0) & i_rd_we_B)) ? reg0_in :
-                        reg0_out;
+                        (i_rs_B == 3'd0) ? reg0_out :
+                        ((i_rs_B == 3'd1) & ((i_rd_B == 3'd1) & i_rd_we_B)) ? reg1_in :
+                        (i_rs_B == 3'd1) ? reg1_out :
+                        ((i_rs_B == 3'd2) & ((i_rd_B == 3'd2) & i_rd_we_B)) ? reg2_in :
+                        (i_rs_B == 3'd2) ? reg2_out :
+                        ((i_rs_B == 3'd3) & ((i_rd_B == 3'd3) & i_rd_we_B)) ? reg3_in :
+                        (i_rs_B == 3'd3) ? reg3_out :
+                        ((i_rs_B == 3'd4) & ((i_rd_B == 3'd4) & i_rd_we_B)) ? reg4_in :
+                        (i_rs_B == 3'd4) ? reg4_out :
+                        ((i_rs_B == 3'd5) & ((i_rd_B == 3'd5) & i_rd_we_B)) ? reg5_in :
+                        (i_rs_B == 3'd5) ? reg5_out :
+                        ((i_rs_B == 3'd6) & ((i_rd_B == 3'd6) & i_rd_we_B)) ? reg6_in :
+                        (i_rs_B == 3'd6) ? reg6_out :
+                        ((i_rs_B == 3'd7) & ((i_rd_B == 3'd7) & i_rd_we_B)) ? reg7_in :
+                        reg7_out;
 
    assign o_rt_data_A = ((i_rt_A == 3'd0) & ((i_rd_A == 3'd0) & i_rd_we_A)) ? reg0_in :
                         reg0_out; 
