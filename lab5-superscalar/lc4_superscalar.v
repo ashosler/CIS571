@@ -83,18 +83,30 @@ module lc4_processor(input wire         clk,             // main clock
 
    // Register Data Wires
    wire [15:0] 	 rs_data_A, rt_data_A, rs_data_B, rt_data_B;
+   wire [15:0]     wdata_A, wdata_B;
 
-   /* superscalar happens when insn DA and DB */
+   /* superscalar stall happens when insn DA and DB */
       
    // Instantiate Register File
    lc4_regfile_ss Register_ss (.clk(clk), .gwe(gwe), .rst(rst),
                   .i_rs_A(r1sel_A), .o_rs_data_A(rs_data_A), .i_rt_A(r2sel_A), .o_rt_data_A(rt_data_A),
                   .i_rs_B(r2sel_B), .o_rs_data_B(rs_data_B), .i_rt_B(r2sel_B), .o_rt_data_B(rt_data_B),
-                  .i_rd_A(wsel_A), .i_wdata_A(/* TODO */), .i_rd_we_A(regfile_we_A),
-                  .i_rd_B(wsel_B), .i_wdata_B(/* TODO */), .i_rd_we_B(regfile_we_B));
+                  .i_rd_A(wsel_A), .i_wdata_A(wdata_A), .i_rd_we_A(regfile_we_A),
+                  .i_rd_B(wsel_B), .i_wdata_B(wdata_B), .i_rd_we_B(regfile_we_B));
+
+   // ================================== EXECUTE Stage ================================================
+   // ******************************* [Decode to] EXECUTE Register ************************************
+   wire [15:0] EX_insn_A, EX_insn_B, EX_pc_A, EX_pc_B, EX_rs_data_A, EX_rs_data_B, EX_rt_data_A, EX_rt_data_B;
+
+   Nbit_reg #(16) IDEX_insn_A(.out(EX_insn_A), .in(DEC_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IDEX_insn_B(.out(EX_insn_B), .in(DEC_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IDEX_pc_A(.out(EX_pc_A), .in(/* TODO */), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IDEX_pc_B(.out(EX_pc_B), .in(/* TODO */), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   
+   // *********************************** END EXECUTE Register ****************************************
                         
    // Instantiate ALU                                            
-   lc4_alu a0 (.i_insn(i_cur_insn),
+   lc4_alu ALU_A (.i_insn(EX_insn_A),
                .i_pc(pc),
                .i_r1data(rs_data),
                .i_r2data(rt_data),
