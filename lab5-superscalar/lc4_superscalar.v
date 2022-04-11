@@ -47,6 +47,12 @@ module lc4_processor(input wire         clk,             // main clock
                      );
 
    /***  YOUR CODE HERE ***/
+   assign led_data = switch_data;
+
+   wire [15:0] pc;               // Current program counter (read out from pc_reg)
+   wire [15:0] next_pc;          // Next program counter (computed and fed into pc_reg)
+
+   // Program counter register, starts at 8200h at bootup
 
 
 
