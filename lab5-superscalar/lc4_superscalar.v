@@ -64,34 +64,39 @@ module lc4_processor(input wire         clk,             // main clock
 
    // *************** END Decode Register ***************************
 
-   // Instantiate decoder
-   wire [2:0] r1sel, r2sel, wsel;
-   wire r1re, r2re, regfile_we, nzp_we, select_pc_plus_one, is_load, is_store, is_branch, is_control_insn;
-   lc4_decoder Decoder (.insn(DEC_insn_A), .r1sel(r1sel), .r2sel(r2sel), .r2re(r2re),
-                        .wsel(wsel), .regfile_we(regfile_we), .nzp_we(nzp_we), .select_pc_plus_one(select_pc_plus_one),
-                        .is_load(is_load), .is_store(is_store), .is_branch(is_branch), .is_control_insn(is_control_insn));
+   // Instantiate decoders
+   wire [2:0] r1sel_A, r2sel_A, wsel_A;
+   wire r1re_A, r2re_A, regfile_we_A, nzp_we_A, select_pc_plus_one_A,
+        is_load_A, is_store_A, is_branch_A, is_control_insn_A;
+   lc4_decoder Decoder_A (.insn(DEC_insn_A), .r1sel(r1sel_A), .r2sel(r2sel_A), .r2re(r2re_A),
+                        .wsel(wsel_A), .regfile_we(regfile_we_A), .nzp_we(nzp_we_A),
+                        .select_pc_plus_one(select_pc_plus_one_A), .is_load(is_load_A),
+                        .is_store(is_store_A), .is_branch(is_branch_A), .is_control_insn(is_control_insn_A));
+   
+   wire [2:0] r1sel_B, r2sel_B, wsel_B;
+   wire r1re_B, r2re_B, regfile_we_B, nzp_we_B, select_pc_plus_one_B,
+         is_load_B, is_store_B, is_branch_B, is_control_insn_B;
+   lc4_decoder Decoder_B (.insn(DEC_insn_B), .r1sel(r1sel_B), .r2sel(r2sel_B), .r2re(r2re_B),
+                          .wsel(wsel_B), .regfile_we(regfile_we_B), .nzp_we(nzp_we_B),
+                          .select_pc_plus_one(select_pc_plus_one_B), .is_load(is_load_B),
+                          .is_store(is_store_B), .is_branch(is_branch_B), .is_control_insn(is_control_insn_B));
 
    // Register Data Wires
-   wire [15:0] 	 rs_data, rt_data, rd_data, alu_result;
+   wire [15:0] 	 rs_data_A, rt_data_A, rs_data_B, rt_data_B;
       
-                        // Instantiate Register File
-                        lc4_regfile f0 (.clk(clk),
-                              .gwe(gwe),
-                              .rst(rst),
-                              .i_rs(r1sel),
-                              .o_rs_data(rs_data),
-                              .i_rt(r2sel),
-                              .o_rt_data(rt_data),
-                              .i_rd(wsel),
-                              .i_wdata(rd_data),
-                              .i_rd_we(regfile_we));
+   // Instantiate Register File
+   lc4_regfile_ss Register_ss (.clk(clk), .gwe(gwe), .rst(rst),
+                  .i_rs_A(r1sel_A), .o_rs_data_A(rs_data_A), .i_rt_A(r2sel_A), .o_rt_data_A(rt_data_A),
+                  .i_rs_B(r2sel_B), .o_rs_data_B(rs_data_B), .i_rt_B(r2sel_B), .o_rt_data_B(rt_data_B),
+                  .i_rd_A(wsel_A), .i_wdata_A(/* TODO */), .i_rd_we_A(regfile_we_A),
+                  .i_rd_B(wsel_B), .i_wdata_B(/* TODO */), .i_rd_we_B(regfile_we_B));
                         
-                        // Instantiate ALU                                            
-                        lc4_alu a0 (.i_insn(i_cur_insn),
-                                    .i_pc(pc),
-                                    .i_r1data(rs_data),
-                                    .i_r2data(rt_data),
-                                    .o_result(alu_result));
+   // Instantiate ALU                                            
+   lc4_alu a0 (.i_insn(i_cur_insn),
+               .i_pc(pc),
+               .i_r1data(rs_data),
+               .i_r2data(rt_data),
+               .o_result(alu_result));
                         
                         // Data Memory
                         assign o_dmem_addr = is_load ? alu_result :
@@ -145,7 +150,7 @@ module lc4_processor(input wire         clk,             // main clock
                         assign test_dmem_data = is_load ? i_cur_dmem_data :
                                                 is_store ? o_dmem_towrite :
                                                 16'b0;
-                                                
+
    /* Add $display(...) calls in the always block below to
     * print out debug information at the end of every cycle.
     *
