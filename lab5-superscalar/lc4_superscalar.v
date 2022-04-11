@@ -83,6 +83,8 @@ module lc4_processor(input wire         clk,             // main clock
 
    // Register Data Wires
    wire [15:0] 	 rs_data_A, rt_data_A, rs_data_B, rt_data_B;
+
+   /* superscalar happens when insn DA and DB */
       
    // Instantiate Register File
    lc4_regfile_ss Register_ss (.clk(clk), .gwe(gwe), .rst(rst),

@@ -40,74 +40,141 @@ module lc4_regfile_ss #(parameter n = 16)
     );
 
    /*** TODO: Your Code Here ***/
+   // wires for each register
+   wire [n-1:0] reg0_out, reg1_out, reg2_out, reg3_out, reg4_out, reg5_out, reg6_out, reg7_out;
+   wire [n-1:0] reg0_in, reg1_in, reg2_in, reg3_in, reg4_in, reg5_in, reg6_in, reg7_in;
+   wire reg0_we, reg1_we, reg2_we, reg3_we, reg4_we, reg5_we, reg6_we, reg7_we;
 
-   // Registers // 7365/8000 for the register file need to find bug
-    assign o_rs_data_A = ((i_rs_A == 3'd0) && ((i_rd_A == 3'd0) && i_rd_we_A)) ? reg0_in :
-    (i_rs_A == 3'd0)  ? reg0_out :
-    ((i_rs_A == 3'd1) && ((i_rd_A == 3'd1) && i_rd_we_A)) ? reg1_in :
-    (i_rs_A == 3'd1)  ? reg1_out :
-    ((i_rs_A == 3'd2) & ((i_rd_A == 3'd2) & i_rd_we_A)) ? reg2_in :
-    (i_rs_A == 3'd2)  ? reg2_out :
-    ((i_rs_A == 3'd3) & ((i_rd_A == 3'd3) & i_rd_we_A)) ? reg3_in :
-    (i_rs_A == 3'd3)  ? reg3_out :
-    ((i_rs_A == 3'd4) & ((i_rd_A == 3'd4) & i_rd_we_A)) ? reg4_in :
-    (i_rs_A == 3'd4)  ? reg4_out :
-    ((i_rs_A == 3'd5) & ((i_rd_A == 3'd5) & i_rd_we_A)) ? reg5_in :
-    (i_rs_A == 3'd5)  ? reg5_out :
-    ((i_rs_A == 3'd6) & ((i_rd_A == 3'd6) & i_rd_we_A)) ? reg6_in :
-    (i_rs_A == 3'd6)  ? reg6_out :
-    ((i_rs_A == 3'd7) & ((i_rd_A == 3'd7) & i_rd_we_A)) ? reg7_in :
-    reg7_out;
+   // When registers being written to conflict, B gets priority
+   assign reg0_in = (i_rd_B == 3'd0) ? i_wdata_B : i_wdata_A;
+   assign reg1_in = (i_rd_B == 3'd1) ? i_wdata_B : i_wdata_A;
+   assign reg2_in = (i_rd_B == 3'd2) ? i_wdata_B : i_wdata_A;
+   assign reg3_in = (i_rd_B == 3'd3) ? i_wdata_B : i_wdata_A;
+   assign reg4_in = (i_rd_B == 3'd4) ? i_wdata_B : i_wdata_A;
+   assign reg5_in = (i_rd_B == 3'd5) ? i_wdata_B : i_wdata_A;
+   assign reg6_in = (i_rd_B == 3'd6) ? i_wdata_B : i_wdata_A;
+   assign reg7_in = (i_rd_B == 3'd7) ? i_wdata_B : i_wdata_A;
 
-assign o_rs_data_B = ((i_rs_B == 3'd0) & ((i_rd_B == 3'd0) & i_rd_we_B)) ? reg0_in :
-   (i_rs_B == 3'd0) ? reg0_out :
-   ((i_rs_B == 3'd1) & ((i_rd_B == 3'd1) & i_rd_we_B)) ? reg1_in :
-   (i_rs_B == 3'd1) ? reg1_out :
-   ((i_rs_B == 3'd2) & ((i_rd_B == 3'd2) & i_rd_we_B)) ? reg2_in :
-   (i_rs_B == 3'd2) ? reg2_out :
-   ((i_rs_B == 3'd3) & ((i_rd_B == 3'd3) & i_rd_we_B)) ? reg3_in :
-   (i_rs_B == 3'd3) ? reg3_out :
-   ((i_rs_B == 3'd4) & ((i_rd_B == 3'd4) & i_rd_we_B)) ? reg4_in :
-   (i_rs_B == 3'd4) ? reg4_out :
-   ((i_rs_B == 3'd5) & ((i_rd_B == 3'd5) & i_rd_we_B)) ? reg5_in :
-   (i_rs_B == 3'd5) ? reg5_out :
-   ((i_rs_B == 3'd6) & ((i_rd_B == 3'd6) & i_rd_we_B)) ? reg6_in :
-   (i_rs_B == 3'd6) ? reg6_out :
-   ((i_rs_B == 3'd7) & ((i_rd_B == 3'd7) & i_rd_we_B)) ? reg7_in :
-   reg7_out;
+   assign reg0_we = (((i_rd_B == 3'd0) & i_rd_we_B) | 
+                     ((i_rd_A == 3'd0) & i_rd_we_A));
+   assign reg1_we = (((i_rd_B == 3'd1) & i_rd_we_B) | 
+                     ((i_rd_A == 3'd1) & i_rd_we_A));
+   assign reg2_we = (((i_rd_B == 3'd2) & i_rd_we_B) | 
+                     ((i_rd_A == 3'd2) & i_rd_we_A));
+   assign reg3_we = (((i_rd_B == 3'd3) & i_rd_we_B) | 
+                     ((i_rd_A == 3'd3) & i_rd_we_A));
+   assign reg4_we = (((i_rd_B == 3'd4) & i_rd_we_B) | 
+                     ((i_rd_A == 3'd4) & i_rd_we_A));
+   assign reg5_we = (((i_rd_B == 3'd5) & i_rd_we_B) | 
+                     ((i_rd_A == 3'd5) & i_rd_we_A));
+   assign reg6_we = (((i_rd_B == 3'd6) & i_rd_we_B) | 
+                     ((i_rd_A == 3'd6) & i_rd_we_A));
+   assign reg7_we = (((i_rd_B == 3'd7) & i_rd_we_B) | 
+                     ((i_rd_A == 3'd7) & i_rd_we_A));
 
-assign o_rt_data_A = ((i_rt_A == 3'd0) & ((i_rd_A == 3'd0) & i_rd_we_A)) ? reg0_in :
-   (i_rt_A == 3'd0) ? reg0_out :
-   ((i_rt_A == 3'd1) & ((i_rd_A == 3'd1) & i_rd_we_A)) ? reg1_in :
-   (i_rt_A == 3'd1) ? reg1_out : 
-   ((i_rt_A == 3'd2) & ((i_rd_A == 3'd2) & i_rd_we_A)) ? reg2_in :
-   (i_rt_A == 3'd2) ? reg2_out : 
-   ((i_rt_A == 3'd3) & ((i_rd_A == 3'd3) & i_rd_we_A)) ? reg3_in :
-   (i_rt_A == 3'd3) ? reg3_out : 
-   ((i_rt_A == 3'd4) & ((i_rd_A == 3'd4) & i_rd_we_A)) ? reg4_in :
-   (i_rt_A == 3'd4) ? reg4_out : 
-   ((i_rt_A == 3'd5) & ((i_rd_A == 3'd5) & i_rd_we_A)) ? reg5_in :
-   (i_rt_A == 3'd5) ? reg5_out : 
-   ((i_rt_A == 3'd6) & ((i_rd_A == 3'd6) & i_rd_we_A)) ? reg6_in :
-   (i_rt_A == 3'd6) ? reg6_out : 
-   ((i_rt_A == 3'd7) & ((i_rd_A == 3'd7) & i_rd_we_A)) ? reg7_in :
-   reg7_out;
 
-assign o_rt_data_B = ((i_rt_B == 3'd0) & ((i_rd_B == 3'd0) & i_rd_we_B)) ? reg0_in :
-   (i_rt_B == 3'd0) ? reg0_out :
-   ((i_rt_B == 3'd1) & ((i_rd_B == 3'd1) & i_rd_we_B)) ? reg1_in :
-   (i_rt_B == 3'd1) ? reg1_out :
-   ((i_rt_B == 3'd2) & ((i_rd_B == 3'd2) & i_rd_we_B)) ? reg2_in :
-   (i_rt_B == 3'd2) ? reg2_out :
-   ((i_rt_B == 3'd3) & ((i_rd_B == 3'd3) & i_rd_we_B)) ? reg3_in :
-   (i_rt_B == 3'd3) ? reg3_out :
-   ((i_rt_B == 3'd4) & ((i_rd_B == 3'd4) & i_rd_we_B)) ? reg4_in :
-   (i_rt_B == 3'd4) ? reg4_out :
-   ((i_rt_B == 3'd5) & ((i_rd_B == 3'd5) & i_rd_we_B)) ? reg5_in :
-   (i_rt_B == 3'd5) ? reg5_out :
-   ((i_rt_B == 3'd6) & ((i_rd_B == 3'd6) & i_rd_we_B)) ? reg6_in :
-   (i_rt_B == 3'd6) ? reg6_out :
-   ((i_rt_B == 3'd7) & ((i_rd_B == 3'd7) & i_rd_we_B)) ? reg7_in :
-   reg7_out;
+   // Registers instantiated
+   Nbit_reg #(n) reg0 (.in(reg0_in),
+         .out(reg0_out),
+         .clk(clk), .we(reg0_we),
+         .gwe(gwe), .rst(rst));
+   Nbit_reg #(n) reg1 (.in(reg1_in),
+         .out(reg1_out),
+         .clk(clk), .we(reg1_we),
+         .gwe(gwe), .rst(rst));
+   Nbit_reg #(n) reg2 (.in(reg2_in),
+         .out(reg2_out),
+         .clk(clk), .we(reg2_we),
+         .gwe(gwe), .rst(rst));
+   Nbit_reg #(n) reg3 (.in(reg3_in),
+         .out(reg3_out),
+         .clk(clk), .we(reg3_we),
+         .gwe(gwe), .rst(rst));
+   Nbit_reg #(n) reg4 (.in(reg4_in),
+         .out(reg4_out),
+         .clk(clk), .we(reg4_we),
+         .gwe(gwe), .rst(rst));
+   Nbit_reg #(n) reg5 (.in(reg5_in),
+         .out(reg5_out), 
+         .clk(clk), .we(reg5_we),
+         .gwe(gwe), .rst(rst));
+   Nbit_reg #(n) reg6 (.in(reg6_in), 
+         .out(reg6_out), 
+         .clk(clk), .we(reg6_we),
+         .gwe(gwe), .rst(rst));
+   Nbit_reg #(n) reg7 (.in(reg7_in), 
+         .out(reg7_out), 
+         .clk(clk), .we(reg7_we),
+         .gwe(gwe), .rst(rst));
+
+         // bypass inputs to outputs should this take conflicts b/w A and B into account??
+         /* INSN in b piep */
+   assign o_rs_data_A = ((i_rs_A == 3'd0) && reg0_we) ? reg0_in :
+                         (i_rs_A == 3'd0)  ? reg0_out :
+                         ((i_rs_A == 3'd1) && reg1_we) ? reg1_in :
+                         (i_rs_A == 3'd1)  ? reg1_out :
+                         ((i_rs_A == 3'd2) & reg2_we) ? reg2_in :
+                         (i_rs_A == 3'd2)  ? reg2_out :
+                         ((i_rs_A == 3'd3) & reg3_we) ? reg3_in :
+                         (i_rs_A == 3'd3)  ? reg3_out :
+                         ((i_rs_A == 3'd4) & reg4_we) ? reg4_in :
+                         (i_rs_A == 3'd4)  ? reg4_out :
+                         ((i_rs_A == 3'd5) & reg5_we) ? reg5_in :
+                         (i_rs_A == 3'd5)  ? reg5_out :
+                         ((i_rs_A == 3'd6) & reg6_we) ? reg6_in :
+                         (i_rs_A == 3'd6)  ? reg6_out :
+                         ((i_rs_A == 3'd7) & reg7_we) ? reg7_in :
+                         reg7_out;
+
+   assign o_rs_data_B = ((i_rs_B == 3'd0) & reg0_we) ? reg0_in :
+                        (i_rs_B == 3'd0) ? reg0_out :
+                        ((i_rs_B == 3'd1) & reg1_we) ? reg1_in :
+                        (i_rs_B == 3'd1) ? reg1_out :
+                        ((i_rs_B == 3'd2) & reg2_we) ? reg2_in :
+                        (i_rs_B == 3'd2) ? reg2_out :
+                        ((i_rs_B == 3'd3) & reg3_we) ? reg3_in :
+                        (i_rs_B == 3'd3) ? reg3_out :
+                        ((i_rs_B == 3'd4) & reg4_we) ? reg4_in :
+                        (i_rs_B == 3'd4) ? reg4_out :
+                        ((i_rs_B == 3'd5) & reg5_we) ? reg5_in :
+                        (i_rs_B == 3'd5) ? reg5_out :
+                        ((i_rs_B == 3'd6) & reg6_we) ? reg6_in :
+                        (i_rs_B == 3'd6) ? reg6_out :
+                        ((i_rs_B == 3'd7) & reg7_we) ? reg7_in :
+                        reg7_out;
+
+   assign o_rt_data_A = ((i_rt_A == 3'd0) & reg0_we) ? reg0_in :
+                        (i_rt_A == 3'd0) ? reg0_out :
+                        ((i_rt_A == 3'd1) & reg1_we) ? reg1_in :
+                        (i_rt_A == 3'd1) ? reg1_out : 
+                        ((i_rt_A == 3'd2) & reg2_we) ? reg2_in :
+                        (i_rt_A == 3'd2) ? reg2_out : 
+                        ((i_rt_A == 3'd3) & reg3_we) ? reg3_in :
+                        (i_rt_A == 3'd3) ? reg3_out : 
+                        ((i_rt_A == 3'd4) & reg4_we) ? reg4_in :
+                        (i_rt_A == 3'd4) ? reg4_out : 
+                        ((i_rt_A == 3'd5) & reg5_we) ? reg5_in :
+                        (i_rt_A == 3'd5) ? reg5_out : 
+                        ((i_rt_A == 3'd6) & reg6_we) ? reg6_in :
+                        (i_rt_A == 3'd6) ? reg6_out : 
+                        ((i_rt_A == 3'd7) & reg7_we) ? reg7_in :
+                        reg7_out;
+
+   assign o_rt_data_B = ((i_rt_B == 3'd0) & reg0_we) ? reg0_in :
+                        (i_rt_B == 3'd0) ? reg0_out :
+                        ((i_rt_B == 3'd1) & reg1_we) ? reg1_in :
+                        (i_rt_B == 3'd1) ? reg1_out :
+                        ((i_rt_B == 3'd2) & reg2_we) ? reg2_in :
+                        (i_rt_B == 3'd2) ? reg2_out :
+                        ((i_rt_B == 3'd3) & reg3_we) ? reg3_in :
+                        (i_rt_B == 3'd3) ? reg3_out :
+                        ((i_rt_B == 3'd4) & reg4_we) ? reg4_in :
+                        (i_rt_B == 3'd4) ? reg4_out :
+                        ((i_rt_B == 3'd5) & reg5_we) ? reg5_in :
+                        (i_rt_B == 3'd5) ? reg5_out :
+                        ((i_rt_B == 3'd6) & reg6_we) ? reg6_in :
+                        (i_rt_B == 3'd6) ? reg6_out :
+                        ((i_rt_B == 3'd7) & reg7_we) ? reg7_in :
+                        reg7_out;
 
 endmodule
