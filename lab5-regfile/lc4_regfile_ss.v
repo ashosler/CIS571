@@ -108,9 +108,9 @@ module lc4_regfile_ss #(parameter n = 16)
          .gwe(gwe), .rst(rst));
 
          // bypass inputs to outputs should this take conflicts b/w A and B into account??
-   assign o_rs_data_A = ((i_rs_A == 3'd0) & ((i_rd_A == 3'd0) & i_rd_we_A)) ? reg0_in :
+   assign o_rs_data_A = ((i_rs_A == 3'd0) && ((i_rd_A == 3'd0) && i_rd_we_A)) ? reg0_in :
                          (i_rs_A == 3'd0)  ? reg0_out :
-                         ((i_rs_A == 3'd1) & ((i_rd_A == 3'd1) & i_rd_we_A)) ? reg1_in :
+                         ((i_rs_A == 3'd1) && ((i_rd_A == 3'd1) && i_rd_we_A)) ? reg1_in :
                          (i_rs_A == 3'd1)  ? reg1_out :
                          ((i_rs_A == 3'd2) & ((i_rd_A == 3'd2) & i_rd_we_A)) ? reg2_in :
                          (i_rs_A == 3'd2)  ? reg2_out :
