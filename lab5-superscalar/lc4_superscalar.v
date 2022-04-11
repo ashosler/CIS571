@@ -54,13 +54,18 @@ module lc4_processor(input wire         clk,             // main clock
 
    // Program counter register, starts at 8200h at bootup
    Nbit_reg #(16, 16'h8200) pc_reg (.in(next_pc), .out(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   
+   wire [15:0] pc_B;
+   cla16 c0 (.a(pc), .b(16'b0), .c(1'b1), .sum(pc_B));
 
    // =================================== DECODE Stage ===============================================
    // *************** [Fetch to] Decode Register ********************
-   wire [15:0] DEC_insn_A, DEC_insn_B;
+   wire [15:0] DEC_insn_A, DEC_insn_B, DEC_pc_A, DEC_pc_B;
 
    Nbit_reg #(16) IFID_insn_A(.out(DEC_insn_A), .in(i_cur_insn_A), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IFID_insn_B(.out(DEC_insn_B), .in(i_cur_insn_B), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IFID_pc_A(.out(DEC_pc_A), .in(pc), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IFID_pc_B(.out(DEC_pc_B), .in(pc_B), .we(1'b1), .gwe(gwe), .rst(rst));
 
    // *************** END Decode Register ***************************
 
@@ -102,6 +107,9 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(16) IDEX_insn_B(.out(EX_insn_B), .in(DEC_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_pc_A(.out(EX_pc_A), .in(/* TODO */), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_pc_B(.out(EX_pc_B), .in(/* TODO */), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IDEX_rs_data_A(.out(EX_rs_data_A), .in(rs_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IDEX_rs_data_B(.out(EX_rs_data_B), .in(rs_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IDEX_rt_data_A(.out(EX_rt_data_A), .in(rt_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    
    // *********************************** END EXECUTE Register ****************************************
                         
