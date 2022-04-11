@@ -55,6 +55,7 @@ module lc4_processor(input wire         clk,             // main clock
    // Program counter register, starts at 8200h at bootup
    Nbit_reg #(16, 16'h8200) pc_reg (.in(next_pc), .out(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    
+   // Program counter for pipe B instruction
    wire [15:0] pc_B;
    cla16 c0 (.a(pc), .b(16'b0), .c(1'b1), .sum(pc_B));
 
@@ -97,7 +98,7 @@ module lc4_processor(input wire         clk,             // main clock
                   .i_rs_A(r1sel_A), .o_rs_data_A(rs_data_A), .i_rt_A(r2sel_A), .o_rt_data_A(rt_data_A),
                   .i_rs_B(r2sel_B), .o_rs_data_B(rs_data_B), .i_rt_B(r2sel_B), .o_rt_data_B(rt_data_B),
                   .i_rd_A(wsel_A), .i_wdata_A(wdata_A), .i_rd_we_A(regfile_we_A),
-                  .i_rd_B(wsel_B), .i_wdata_B(wdata_B), .i_rd_we_B(regfile_we_B));
+                  .i_rd_B(wsel_B), .i_wdata_B(wdata_B), .i_rd_we_B(regfile_we_B)); // wdata_A and B should be plugged from writeback
 
    // ================================== EXECUTE Stage ================================================
    // ******************************* [Decode to] EXECUTE Register ************************************
@@ -105,20 +106,20 @@ module lc4_processor(input wire         clk,             // main clock
 
    Nbit_reg #(16) IDEX_insn_A(.out(EX_insn_A), .in(DEC_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_insn_B(.out(EX_insn_B), .in(DEC_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IDEX_pc_A(.out(EX_pc_A), .in(/* TODO */), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IDEX_pc_B(.out(EX_pc_B), .in(/* TODO */), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IDEX_pc_A(.out(EX_pc_A), .in(DEC_pc_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IDEX_pc_B(.out(EX_pc_B), .in(DEC_pc_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_rs_data_A(.out(EX_rs_data_A), .in(rs_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_rs_data_B(.out(EX_rs_data_B), .in(rs_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_rt_data_A(.out(EX_rt_data_A), .in(rt_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    
    // *********************************** END EXECUTE Register ****************************************
                         
-   // Instantiate ALU                                            
-   lc4_alu ALU_A (.i_insn(EX_insn_A),
-               .i_pc(pc),
-               .i_r1data(rs_data),
-               .i_r2data(rt_data),
-               .o_result(alu_result));
+   // Instantiate ALUs
+   wire [15:0] alu_result_A, alu_result_B;                                            
+   lc4_alu ALU_A (.i_insn(EX_insn_A), .i_pc(EX_pc_A), .i_r1data(EX_rs_data_A),
+                  .i_r2data(EX_rt_data_A), .o_result(alu_result_A));
+   lc4_alu ALU_B (.i_insn(EX_insn_B), .i_pc(EX_pc_B), .i_r1data(EX_rs_data_B),
+                  .i_r2data(EX_rt_data_B), .o_result(alu_result_B));
                         
                         // Data Memory
                         assign o_dmem_addr = is_load ? alu_result :
