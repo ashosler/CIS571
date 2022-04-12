@@ -112,10 +112,10 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(16) IDEX_rs_data_B(.out(EX_rs_data_B), .in(rs_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_rt_data_A(.out(EX_rt_data_A), .in(rt_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
-   wire EX_is_load_A;
+   wire EX_is_load_A, EX_nzp_we_A;
 
-   Nbit_reg #(16) IDEX_is_load_A(.out(EX_is_load_A), .in(is_load_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   
+   Nbit_reg #(1) IDEX_is_load_A(.out(EX_is_load_A), .in(is_load_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) IDEX_nzp_we_A(.out(EX_nzp_we_A), .in(nzp_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    // *********************************** END EXECUTE Register ****************************************
                         
    // Instantiate ALUs
@@ -125,16 +125,42 @@ module lc4_processor(input wire         clk,             // main clock
    lc4_alu ALU_B (.i_insn(EX_insn_B), .i_pc(EX_pc_B), .i_r1data(EX_rs_data_B),
                   .i_r2data(EX_rt_data_B), .o_result(alu_result_B));
 
-   // TODO: NZP Register (CMPs nzp_we) 
-   wire [2:0] 		nzp_A, nzp_in_A;
-   wire [15:0] 		nzp_data_A;
+   // Calculate incremented pc's
+   wire [15:0] pc_plus_two_A, pc_plus_two_B;
+   cla16 PC_Incrementer_A (.a(EX_pc_A), .b(16'b0), .cin(2'b10), .sum(pc_plus_two_A));
+   cla16 PC_Incrementer_B (.a(EX_pc_B), .b(16'b0), .cin(2'b10), .sum(pc_plus_two_B));
+
+   // NZP Registers (CMPs nzp_we) 
+   wire [2:0] 		nzp_A, nzp_in_A, nzp_B, nzp_in_B;
+   wire [15:0] 		nzp_data_A, nzp_data_B;0
    assign nzp_data_A = EX_is_load_A ? i_cur_dmem_data :             // where is dmem data coming from?
-                    EX_insn_A[15:12] == 4'b1111 ? pc_inc : //TRAP (or should it be all control insn?)
+                    EX_insn_A[15:12] == 4'b1111 ? pc_plus_two_A : //TRAP (or should it be all control insn?)
                     alu_result_A;
    assign nzp_in_A = nzp_data_A == 16'b0 ? 3'b010 :
                    nzp_data_A[15] == 1'b0 ? 3'b001 :
                    3'b100;
-   Nbit_reg #(3) nzp_reg (.in(nzp_in_A), .out(nzp_A), .clk(clk), .we(nzp_we_A), .gwe(gwe), .rst(rst));
+   Nbit_reg #(3) nzp_reg (.in(nzp_in_A), .out(nzp_A), .clk(clk), .we(EX_nzp_we_A), 
+                          .gwe(gwe), .rst(rst));
+
+   assign nzp_data_B = EX_is_load_B ? i_cur_dmem_data :             // where is dmem data coming from?
+                       (EX_insn_B[15:12] == 4'b1111) ? pc_plus_two_B : //TRAP (or should it be all control insn?)
+                       alu_result_B;
+   assign nzp_in_B = (nzp_data_B == 16'b0) ? 3'b010 :
+                     (nzp_data_B[15] == 1'b0) ? 3'b001 :
+                     3'b100;
+   Nbit_reg #(3) nzp_reg (.in(nzp_in_B), .out(nzp_B), .clk(clk), .we(EX_nzp_we_B), 
+                          .gwe(gwe), .rst(rst));
+
+   // ============================================== MEMORY Stage ===============================================
+   // ************************************* [Execute to] Memory Register ****************************************
+   wire [15:0] MEM_insn_A, MEM_alu_result_A, MEM_pc_A, MEM_pc_plus_two_A, MEM_rs_data_A, MEM_rt_data_A;
+   wire MEM_is_load_A;
+
+   Nbit_reg #(16) EXMEM_insn_A(.out(MEM_insn_A), .in(EX_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) EXMEM_pc_A(.out(MEM_pc_A), .in(EX_pc_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) EXMEM_pc_plus_two_A(.out(MEM_pc_inc_A), .in(pc_plus_two_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) EXMEM_is_load_A(.out(MEM_is_load_A), .in(EX_is_load_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   // ****************************************** END Memory Register ********************************************
                         
                         // Data Memory
                         assign o_dmem_addr = is_load ? alu_result :
@@ -145,7 +171,7 @@ module lc4_processor(input wire         clk,             // main clock
                      
                         // regInputMux 
                         wire 	 [15:0] pc_inc;
-                        cla16 c0(.a(pc),
+                        cla16 c1(.a(pc),
                             .b(16'b0),
                             .cin(1'b1),
                             .sum(pc_inc));
