@@ -132,14 +132,14 @@ module lc4_processor(input wire         clk,             // main clock
 
    // NZP Registers (CMPs nzp_we) 
    wire [2:0] 		nzp_A, nzp_in_A, nzp_B, nzp_in_B;
-   wire [15:0] 		nzp_data_A, nzp_data_B;0
+   wire [15:0] 		nzp_data_A, nzp_data_B;
    assign nzp_data_A = EX_is_load_A ? i_cur_dmem_data :             // where is dmem data coming from?
                     EX_insn_A[15:12] == 4'b1111 ? pc_plus_two_A : //TRAP (or should it be all control insn?)
                     alu_result_A;
    assign nzp_in_A = nzp_data_A == 16'b0 ? 3'b010 :
                    nzp_data_A[15] == 1'b0 ? 3'b001 :
                    3'b100;
-   Nbit_reg #(3) nzp_reg (.in(nzp_in_A), .out(nzp_A), .clk(clk), .we(EX_nzp_we_A), 
+   Nbit_reg #(3) NZP_Reg_A (.in(nzp_in_A), .out(nzp_A), .clk(clk), .we(EX_nzp_we_A), 
                           .gwe(gwe), .rst(rst));
 
    assign nzp_data_B = EX_is_load_B ? i_cur_dmem_data :             // where is dmem data coming from?
@@ -148,7 +148,7 @@ module lc4_processor(input wire         clk,             // main clock
    assign nzp_in_B = (nzp_data_B == 16'b0) ? 3'b010 :
                      (nzp_data_B[15] == 1'b0) ? 3'b001 :
                      3'b100;
-   Nbit_reg #(3) nzp_reg (.in(nzp_in_B), .out(nzp_B), .clk(clk), .we(EX_nzp_we_B), 
+   Nbit_reg #(3) NZP_Reg_B (.in(nzp_in_B), .out(nzp_B), .clk(clk), .we(EX_nzp_we_B), 
                           .gwe(gwe), .rst(rst));
 
    // ============================================== MEMORY Stage ===============================================
