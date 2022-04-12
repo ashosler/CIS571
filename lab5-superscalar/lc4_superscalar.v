@@ -111,6 +111,10 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(16) IDEX_rs_data_A(.out(EX_rs_data_A), .in(rs_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_rs_data_B(.out(EX_rs_data_B), .in(rs_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_rt_data_A(.out(EX_rt_data_A), .in(rt_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+   wire EX_is_load_A;
+
+   Nbit_reg #(16) IDEX_is_load_A(.out(EX_is_load_A), .in(is_load_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    
    // *********************************** END EXECUTE Register ****************************************
                         
@@ -120,6 +124,17 @@ module lc4_processor(input wire         clk,             // main clock
                   .i_r2data(EX_rt_data_A), .o_result(alu_result_A));
    lc4_alu ALU_B (.i_insn(EX_insn_B), .i_pc(EX_pc_B), .i_r1data(EX_rs_data_B),
                   .i_r2data(EX_rt_data_B), .o_result(alu_result_B));
+
+   // TODO: NZP Register (CMPs nzp_we) 
+   wire [2:0] 		nzp_A, nzp_in_A;
+   wire [15:0] 		nzp_data_A;
+   assign nzp_data_A = EX_is_load_A ? i_cur_dmem_data :             // where is dmem data coming from?
+                    EX_insn_A[15:12] == 4'b1111 ? pc_inc : //TRAP (or should it be all control insn?)
+                    alu_result_A;
+   assign nzp_in_A = nzp_data_A == 16'b0 ? 3'b010 :
+                   nzp_data_A[15] == 1'b0 ? 3'b001 :
+                   3'b100;
+   Nbit_reg #(3) nzp_reg (.in(nzp_in_A), .out(nzp_A), .clk(clk), .we(nzp_we_A), .gwe(gwe), .rst(rst));
                         
                         // Data Memory
                         assign o_dmem_addr = is_load ? alu_result :
@@ -138,17 +153,7 @@ module lc4_processor(input wire         clk,             // main clock
                                select_pc_plus_one == 1'b1 ? pc_inc :
                                alu_result; 
                      
-                        // NZP Register (CMPs nzp_we)
-                        wire [2:0] 		nzp, nzp_in;
-                        wire [15:0] 		sel_nzp;
-                        assign sel_nzp = is_load ? i_cur_dmem_data :
-                               i_cur_insn[15:12] == 4'b1111 ? pc_inc : //TRAP (or should it be all control insn?)
-                               alu_result;
-                        assign nzp_in = sel_nzp == 16'b0 ? 3'b010 :
-                              //sel_nzp > 16'b0 ? 3'b001 :
-                              sel_nzp[15] == 1'b0 ? 3'b001 :
-                              3'b100;
-                        Nbit_reg #(3) nzp_reg (.in(nzp_in), .out(nzp), .clk(clk), .we(nzp_we), .gwe(gwe), .rst(rst));
+                        
                         
                         // Branch Unit
                         wire	is_true_branch;
