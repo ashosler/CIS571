@@ -55,7 +55,7 @@ module lc4_processor(input wire         clk,             // main clock
    wire [15:0] next_pc;          // Next program counter (computed and fed into pc_reg)
 
    // Program counter register, starts at 8200h at bootup
-   Nbit_reg #(16, 16'h8200) pc_reg (.in(WB_next_pc), .out(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16, 16'h8200) pc_reg (.in(next_pc), .out(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
    // ******************************* END Pipeline Register Fetch **************************************
    // Program counter for pipe B instruction
@@ -89,8 +89,8 @@ module lc4_processor(input wire         clk,             // main clock
 
    // Stall registers
    wire [1:0] DEC_stall_A, DEC_stall_B;
-   Nbit_reg #(2) IFID_stall_A(.out(DEC_stall_A), .in(IF_stall_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(2) IFID_stall_B(.out(DEC_stall_B), .in(IF_stall_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(2, 2'b10) IFID_stall_A(.out(DEC_stall_A), .in(IF_stall_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(2, 2'b10) IFID_stall_B(.out(DEC_stall_B), .in(IF_stall_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
    // Instantiate decoders
    wire [2:0] r1sel_A, r2sel_A, wsel_A;
@@ -112,8 +112,6 @@ module lc4_processor(input wire         clk,             // main clock
    // Register Data Wires
    wire [15:0] 	 rs_data_A, rt_data_A, rs_data_B, rt_data_B;
    wire [15:0]     wdata_A, wdata_B;
-
-   /* superscalar stall happens when insn DA and DB */
       
    // Instantiate Register File
    lc4_regfile_ss Register_ss (.clk(clk), .gwe(gwe), .rst(rst),
@@ -155,6 +153,12 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(1) IDEX_select_pc_plus_one_B(.out(EX_select_pc_plus_one_B), .in(select_pc_plus_one_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); 
    Nbit_reg #(1) IDEX_is_control_B(.out(EX_is_control_insn_B), .in(is_control_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    // *********************************** END EXECUTE Register ****************************************
+
+   // Stall registers
+   wire [1:0] EX_stall_A, EX_stall_B;
+   Nbit_reg #(2, 2'b10) IDEX_stall_A(.out(EX_stall_A), .in(DEC_stall_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(2, 2'b10) IDEX_stall_B(.out(EX_stall_B), .in(DEC_stall_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   wire [1:0] new_stall_B = increment_by_one ? 2'b01 : EX_stall_B;
                         
    // Instantiate ALUs
    wire [15:0] alu_result_A, alu_result_B;                                            
@@ -249,10 +253,14 @@ module lc4_processor(input wire         clk,             // main clock
    
    // ****************************************** END Memory Register ********************************************
 
-   wire [15:0] MEM_dmem_addr_A, MEM_dmem_towrite_A, MEM_dmem_data_A, MEM_dmem_addr_B, MEM_dmem_towrite_B, MEM_dmem_data_B;
-   wire MEM_dmem_we_A, MEM_dmem_we_B;
+   // Stall registers
+   wire [1:0] MEM_stall_A, MEM_stall_B;
+   Nbit_reg #(2, 2'b10) EXMEM_stall_A(.out(MEM_stall_A), .in(EX_stall_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(2, 2'b10) EXMEM_stall_B(.out(MEM_stall_B), .in(new_stall_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    
    // Data Memory (memory stage)
+   wire [15:0] MEM_dmem_addr_A, MEM_dmem_towrite_A, MEM_dmem_data_A, MEM_dmem_addr_B, MEM_dmem_towrite_B, MEM_dmem_data_B;
+   wire MEM_dmem_we_A, MEM_dmem_we_B;
    assign MEM_dmem_addr_A = MEM_is_load_A ? MEM_alu_result_A :
                         MEM_is_store_A ? MEM_alu_result_A :
                         16'b0;
@@ -305,6 +313,11 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(16) MEMWB_next_pc(.out(WB_next_pc), .in(MEM_next_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    // ******************************************** END Writeback Pipeline Register ******************************************
 
+   // Stall registers
+   wire [1:0] WB_stall_A, WB_stall_B;
+   Nbit_reg #(2, 2'b10) MEMWB_stall_A(.out(WB_stall_A), .in(MEM_stall_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(2, 2'b10) MEMWB_stall_B(.out(WB_stall_B), .in(MEM_stall_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
    // Assign the next pc and output current pc (writeback stage)                    
    assign test_cur_pc_A = WB_pc_A;
    assign test_cur_insn_A = WB_insn_A;
@@ -330,8 +343,8 @@ module lc4_processor(input wire         clk,             // main clock
    assign test_nzp_we_B = WB_nzp_we_B;
    assign test_dmem_we_B = WB_dmem_we_B;
 
-   assign test_stall_A = 0;
-   assign test_stall_B = 0;
+   assign test_stall_A = WB_stall_A;
+   assign test_stall_B = WB_stall_B;
 
 
                         // output wire [ 1:0] test_stall_A,        // is this a stall cycle?  (0: no stall,
