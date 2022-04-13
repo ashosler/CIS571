@@ -40,7 +40,7 @@ module lc4_regfile_ss #(parameter n = 16)
     );
 
    /*** TODO: Your Code Here ***/
-    wire [n-1:0] output_data[8:0];
+    wire [n-1:0] output_data[7:0];
     genvar i; 
     generate 
           for (i = 0; i < 8; i = i + 1) begin

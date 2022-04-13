@@ -96,7 +96,7 @@ module lc4_processor(input wire         clk,             // main clock
    wire [2:0] r1sel_A, r2sel_A, wsel_A;
    wire r1re_A, r2re_A, regfile_we_A, nzp_we_A, select_pc_plus_one_A,
         is_load_A, is_store_A, is_branch_A, is_control_insn_A;
-   lc4_decoder Decoder_A (.insn(DEC_insn_A), .r1sel(r1sel_A), .r2sel(r2sel_A), .r2re(r2re_A),
+   lc4_decoder Decoder_A (.insn(DEC_insn_A), .r1sel(r1sel_A), .r1re(r1re_A), .r2sel(r2sel_A), .r2re(r2re_A),
                         .wsel(wsel_A), .regfile_we(regfile_we_A), .nzp_we(nzp_we_A),
                         .select_pc_plus_one(select_pc_plus_one_A), .is_load(is_load_A),
                         .is_store(is_store_A), .is_branch(is_branch_A), .is_control_insn(is_control_insn_A));
@@ -104,7 +104,7 @@ module lc4_processor(input wire         clk,             // main clock
    wire [2:0] r1sel_B, r2sel_B, wsel_B;
    wire r1re_B, r2re_B, regfile_we_B, nzp_we_B, select_pc_plus_one_B,
          is_load_B, is_store_B, is_branch_B, is_control_insn_B;
-   lc4_decoder Decoder_B (.insn(DEC_insn_B), .r1sel(r1sel_B), .r2sel(r2sel_B), .r2re(r2re_B),
+   lc4_decoder Decoder_B (.insn(DEC_insn_B), .r1sel(r1sel_B), .r1re(r1re_B), .r2sel(r2sel_B), .r2re(r2re_B),
                           .wsel(wsel_B), .regfile_we(regfile_we_B), .nzp_we(nzp_we_B),
                           .select_pc_plus_one(select_pc_plus_one_B), .is_load(is_load_B),
                           .is_store(is_store_B), .is_branch(is_branch_B), .is_control_insn(is_control_insn_B));
