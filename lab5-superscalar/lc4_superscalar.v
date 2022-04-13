@@ -66,7 +66,7 @@ module lc4_processor(input wire         clk,             // main clock
    assign o_cur_pc = pc;
 
    // fetch insns and pcs based on switching
-   wire IF_insn_A, IF_insn_B, IF_pc_A, IF_pc_B;
+   wire [15:0] IF_insn_A, IF_insn_B, IF_pc_A, IF_pc_B;
    assign IF_insn_A = increment_by_one ? DEC_insn_B : i_cur_insn_A;
    assign IF_insn_B = increment_by_one ? i_cur_insn_A : i_cur_insn_B;
    assign IF_pc_A = increment_by_one ? DEC_pc_B : pc;
