@@ -122,39 +122,6 @@ Checking module count...
 Checking module lc4_memory...
 Checking module Nbit_reg...
 Checking module lc4_processor...
-Warning: Wire lc4_processor.\o_dmem_addr [15] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [14] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [13] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [12] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [11] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [10] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [9] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [8] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [7] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [6] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [5] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [4] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [3] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [2] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [1] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [0] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_we is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [15] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [14] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [13] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [12] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [11] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [10] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [9] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [8] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [7] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [6] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [5] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [4] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [3] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [2] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [1] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [0] is used but has no driver.
 Checking module lc4_regfile_ss...
 Checking module lc4_divider_one_iter...
 Checking module lc4_divider...
@@ -163,7 +130,7 @@ Checking module cla16...
 Checking module gp4...
 Checking module gp1...
 Checking module lc4_alu...
-Found and reported 33 problems.
+Found and reported 0 problems.
 
 14. Executing HIERARCHY pass (managing design hierarchy).
 Parameter 1 (\n) = 16
@@ -446,36 +413,17 @@ Checking module count...
 Checking module lc4_memory...
 Checking module Nbit_reg...
 Checking module lc4_processor...
-Warning: Wire lc4_processor.\o_dmem_addr [15] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [14] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [13] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [12] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [11] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [10] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [9] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [8] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [7] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [6] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [5] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [4] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [3] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [2] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [1] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_addr [0] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_we is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [15] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [14] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [13] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [12] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [11] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [10] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [9] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [8] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [7] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [6] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [5] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [4] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [3] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [2] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [1] is used but has no driver.
-Warning: Wire lc4_processor.\o_dmem_towrite [0] is used but has no driver.
+Checking module lc4_regfile_ss...
+Checking module lc4_divider_one_iter...
+Checking module lc4_divider...
+Checking module lc4_decoder...
+Checking module cla16...
+Checking module gp4...
+Checking module gp1...
+Checking module lc4_alu...
+Found and reported 0 problems.
+
+Warnings: 1 unique messages, 1 total
+End of script. Logfile hash: 1a93f1e328, CPU: user 0.52s system 0.01s, MEM: 55.39 MB peak
+Yosys 0.9+3855 (git sha1 54294957, clang 7.0.1 -fPIC -Os)
+Time spent: 61% 2x check (0 sec), 21% 1x flatten (0 sec), ...

@@ -76,8 +76,8 @@ module lc4_processor(input wire         clk,             // main clock
    assign IF_stall_A = (i_cur_insn_A == 16'd0) ? 2'b10 : 2'b0;
    assign IF_stall_B = (i_cur_insn_B == 16'd0) ? 2'b10 : 2'b0;
 
-   // =================================== DECODE Stage ===============================================
-   // *************** [Fetch to] Decode Register ********************
+   // ======================================= DECODE Stage ===========================================
+   // ********************************* [Fetch to] Decode Register ***********************************
    wire [15:0] DEC_insn_A, DEC_insn_B, DEC_pc_A, DEC_pc_B;
 
    Nbit_reg #(16) IFID_insn_A(.out(DEC_insn_A), .in(IF_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -85,7 +85,7 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(16) IFID_pc_A(.out(DEC_pc_A), .in(IF_pc_A), .we(1'b1), .clk(clk), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IFID_pc_B(.out(DEC_pc_B), .in(IF_pc_B), .we(1'b1), .clk(clk), .gwe(gwe), .rst(rst));
 
-   // *************** END Decode Register ***************************
+   // *************************************** END Decode Register *************************************
 
    // Stall registers
    wire [1:0] DEC_stall_A, DEC_stall_B;
@@ -284,6 +284,11 @@ module lc4_processor(input wire         clk,             // main clock
    assign MEM_dmem_data_B = MEM_is_load_B ? MEM_dmem_data :
                             MEM_is_store_B ? MEM_dmem_towrite_B :
                             16'b0;
+
+   // assign output wires
+   assign o_dmem_addr = MEM_dmem_addr_A;
+   assign o_dmem_towrite = MEM_dmem_towrite_A;
+   assign o_dmem_we = MEM_dmem_we_A;
 
    // ================================================ Writeback Stage ======================================================
    // *************************************** [Memory to] Writeback Pipeline Register ***************************************
