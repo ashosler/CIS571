@@ -126,6 +126,7 @@ module lc4_processor(input wire         clk,             // main clock
    // ================================== EXECUTE Stage ================================================
    // ******************************* [Decode to] EXECUTE Register ************************************
    wire [15:0] EX_insn_A, EX_insn_B, EX_pc_A, EX_pc_B, EX_rs_data_A, EX_rs_data_B, EX_rt_data_A, EX_rt_data_B;
+   wire [2:0] EX_wsel_A, EX_wsel_B;
 
    Nbit_reg #(16) IDEX_insn_A(.out(EX_insn_A), .in(DEC_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_insn_B(.out(EX_insn_B), .in(DEC_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -135,6 +136,9 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(16) IDEX_rs_data_B(.out(EX_rs_data_B), .in(rs_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_rt_data_A(.out(EX_rt_data_A), .in(rt_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_rt_data_B(.out(EX_rt_data_B), .in(rt_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+   Nbit_reg #(3) IDEX_wsel_A(.out(EX_wsel_A), .in(wsel_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(3) IDEX_wsel_B(.out(EX_wsel_B), .in(wsel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
    wire EX_is_load_A, EX_nzp_we_A, EX_is_branch_A, EX_is_store_A, EX_select_pc_plus_one_A, EX_is_control_insn_A,
         EX_is_load_B, EX_nzp_we_B, EX_is_branch_B, EX_is_store_B, EX_select_pc_plus_one_B, EX_is_control_insn_B;
@@ -222,7 +226,7 @@ module lc4_processor(input wire         clk,             // main clock
    // ************************************* [Execute to] Memory Register ****************************************
    wire [15:0] MEM_insn_A, MEM_alu_result_A, MEM_pc_A, MEM_rs_data_A, MEM_rt_data_A, MEM_rd_data_A, MEM_next_pc, MEM_dmem_data,
                MEM_insn_B, MEM_alu_result_B, MEM_pc_B, MEM_rs_data_B, MEM_rt_data_B, MEM_rd_data_B;
-   wire [2:0] MEM_nzp_new_bits_A, MEM_nzp_new_bits_B;
+   wire [2:0] MEM_nzp_new_bits_A, MEM_nzp_new_bits_B, MEM_wsel_A, MEM_wsel_B;
    wire MEM_is_load_A, MEM_is_store_A, MEM_nzp_we_A, MEM_is_load_B, MEM_is_store_B, MEM_nzp_we_B;
 
    Nbit_reg #(16) EXMEM_insn_A(.out(MEM_insn_A), .in(EX_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -243,7 +247,9 @@ module lc4_processor(input wire         clk,             // main clock
 
    Nbit_reg #(3) EXMEM_nzp_new_bits_A(.out(MEM_nzp_new_bits_A), .in(nzp_in_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(3) EXMEM_nzp_new_bits_B(.out(MEM_nzp_new_bits_B), .in(nzp_in_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   
+   Nbit_reg #(3) EXMEM_wsel_A(.out(MEM_wsel_A), .in(EX_wsel_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(3) EXMEM_wsel_B(.out(MEM_wsel_B), .in(EX_wsel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+    
    Nbit_reg #(1) EXMEM_is_load_A(.out(MEM_is_load_A), .in(EX_is_load_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) EXMEM_is_store_A(.out(MEM_is_store_A), .in(EX_is_store_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) EXMEM_nzp_we_A(.out(MEM_nzp_we_A), .in(EX_nzp_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -283,7 +289,7 @@ module lc4_processor(input wire         clk,             // main clock
    // *************************************** [Memory to] Writeback Pipeline Register ***************************************
    wire [15:0] WB_pc_A, WB_insn_A, WB_rd_data_A, WB_dmem_addr_A, WB_dmem_data_A, WB_pc_B, WB_insn_B, WB_rd_data_B, WB_dmem_addr_B, WB_dmem_data_B;
    wire [15:0] WB_next_pc;
-   wire [2:0] WB_nzp_new_bits_A, WB_nzp_new_bits_B;
+   wire [2:0] WB_nzp_new_bits_A, WB_nzp_new_bits_B, WB_wsel_A, WB_wsel_B;
    wire WB_regfile_we_A, WB_nzp_we_A, WB_dmem_we_A, WB_regfile_we_B, WB_nzp_we_B, WB_dmem_we_B;
 
    Nbit_reg #(16) MEMWB_pc_A(.out(WB_pc_A), .in(MEM_pc_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -293,7 +299,8 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(16) MEMWB_dmem_data_A(.out(WB_dmem_data_A), .in(MEM_dmem_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
    Nbit_reg #(3) MEMWB_nzp_new_bits_A(.out(WB_nzp_new_bits_A), .in(MEM_nzp_new_bits_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   
+   Nbit_reg #(3) MEMWB_wsel_A(.out(WB_wsel_A), .in(MEM_wsel_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
    Nbit_reg #(1) MEMWB_regfile_we_A(.out(WB_regfile_we_A), .in(MEM_dmem_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) MEMWB_nzp_we_A(.out(WB_nzp_we_A), .in(MEM_nzp_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) MEMWB_dmem_we_A(.out(WB_dmem_we_A), .in(MEM_dmem_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -305,6 +312,7 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(16) MEMWB_dmem_data_B(.out(WB_dmem_data_B), .in(MEM_dmem_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
    Nbit_reg #(3) MEMWB_nzp_new_bits_B(.out(WB_nzp_new_bits_B), .in(MEM_nzp_new_bits_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(3) MEMWB_wsel_B(.out(WB_wsel_B), .in(MEM_wsel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    
    Nbit_reg #(1) MEMWB_regfile_we_B(.out(WB_regfile_we_B), .in(MEM_dmem_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) MEMWB_nzp_we_B(.out(WB_nzp_we_B), .in(MEM_nzp_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -343,48 +351,12 @@ module lc4_processor(input wire         clk,             // main clock
    assign test_nzp_we_B = WB_nzp_we_B;
    assign test_dmem_we_B = WB_dmem_we_B;
 
+   assign test_regfile_wsel_A = WB_wsel_A;
+   assign test_regfile_wsel_B = WB_wsel_B;
+
    assign test_stall_A = WB_stall_A;
    assign test_stall_B = WB_stall_B;
 
-
-                        // output wire [ 1:0] test_stall_A,        // is this a stall cycle?  (0: no stall,
-                        // output wire [ 1:0] test_stall_B,        // 1: pipeline stall, 2: branch stall, 3: load stall)
-   
-                        // output wire [15:0] test_cur_pc_A,       // program counter
-                        // output wire [15:0] test_cur_pc_B,
-                        // output wire [15:0] test_cur_insn_A,     // instruction bits
-                        // output wire [15:0] test_cur_insn_B,
-                        // output wire        test_regfile_we_A,   // register file write-enable
-                        // output wire        test_regfile_we_B,
-                        // output wire [ 2:0] test_regfile_wsel_A, // which register to write
-                        // output wire [ 2:0] test_regfile_wsel_B,
-                        // output wire [15:0] test_regfile_data_A, // data to write to register file
-                        // output wire [15:0] test_regfile_data_B,
-                        // output wire        test_nzp_we_A,       // nzp register write enable
-                        // output wire        test_nzp_we_B,
-                        // output wire [ 2:0] test_nzp_new_bits_A, // new nzp bits
-                        // output wire [ 2:0] test_nzp_new_bits_B,
-                        // output wire        test_dmem_we_A,      // data memory write enable
-                        // output wire        test_dmem_we_B,
-                        // output wire [15:0] test_dmem_addr_A,    // address to read/write from/to memory
-                        // output wire [15:0] test_dmem_addr_B,
-                        // output wire [15:0] test_dmem_data_A,    // data to read/write from/to memory
-                        // output wire [15:0] test_dmem_data_B,
-                     
-                              
-                        // // Assign test wires
-                        // assign test_cur_pc = pc;
-                        // assign test_cur_insn = i_cur_insn;
-                        // assign test_regfile_we = regfile_we;
-                        // assign test_regfile_wsel = wsel;
-                        // assign test_regfile_data = rd_data;
-                        // assign test_nzp_we = nzp_we;
-                        // assign test_nzp_new_bits = nzp_in;
-                        // assign test_dmem_we = o_dmem_we;
-                        // assign test_dmem_addr = o_dmem_addr;
-                        // assign test_dmem_data = is_load ? i_cur_dmem_data :
-                        //                         is_store ? o_dmem_towrite :
-                        //                         16'b0;
 
    /* Add $display(...) calls in the always block below to
     * print out debug information at the end of every cycle.

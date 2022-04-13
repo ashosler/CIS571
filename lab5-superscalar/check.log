@@ -155,44 +155,6 @@ Warning: Wire lc4_processor.\o_dmem_towrite [3] is used but has no driver.
 Warning: Wire lc4_processor.\o_dmem_towrite [2] is used but has no driver.
 Warning: Wire lc4_processor.\o_dmem_towrite [1] is used but has no driver.
 Warning: Wire lc4_processor.\o_dmem_towrite [0] is used but has no driver.
-Warning: Wire lc4_processor.\test_regfile_wsel_A [2] is used but has no driver.
-Warning: Wire lc4_processor.\test_regfile_wsel_A [1] is used but has no driver.
-Warning: Wire lc4_processor.\test_regfile_wsel_A [0] is used but has no driver.
-Warning: Wire lc4_processor.\test_regfile_wsel_B [2] is used but has no driver.
-Warning: Wire lc4_processor.\test_regfile_wsel_B [1] is used but has no driver.
-Warning: Wire lc4_processor.\test_regfile_wsel_B [0] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [15] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [14] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [13] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [12] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [11] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [10] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [9] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [8] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [7] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [6] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [5] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [4] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [3] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [2] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [1] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [0] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [15] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [14] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [13] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [12] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [11] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [10] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [9] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [8] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [7] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [6] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [5] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [4] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [3] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [2] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [1] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [0] is used but has no driver.
 Checking module lc4_regfile_ss...
 Checking module lc4_divider_one_iter...
 Checking module lc4_divider...
@@ -201,7 +163,7 @@ Checking module cla16...
 Checking module gp4...
 Checking module gp1...
 Checking module lc4_alu...
-Found and reported 71 problems.
+Found and reported 33 problems.
 
 14. Executing HIERARCHY pass (managing design hierarchy).
 Parameter 1 (\n) = 16
@@ -249,6 +211,8 @@ Parameter 1 (\n) = 3
 14.4. Executing AST frontend in derive mode using pre-parsed AST for module `\Nbit_reg'.
 Parameter 1 (\n) = 3
 Generating RTLIL representation for module `$paramod\Nbit_reg\n=3'.
+Parameter 1 (\n) = 3
+Found cached RTLIL representation for module `$paramod\Nbit_reg\n=3'.
 Parameter 1 (\n) = 16
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=16'.
 Parameter 1 (\n) = 16
@@ -265,6 +229,8 @@ Parameter 1 (\n) = 1
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=1'.
 Parameter 1 (\n) = 1
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=1'.
+Parameter 1 (\n) = 3
+Found cached RTLIL representation for module `$paramod\Nbit_reg\n=3'.
 Parameter 1 (\n) = 3
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=3'.
 Parameter 1 (\n) = 16
@@ -299,6 +265,10 @@ Parameter 1 (\n) = 3
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=3'.
 Parameter 1 (\n) = 3
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=3'.
+Parameter 1 (\n) = 3
+Found cached RTLIL representation for module `$paramod\Nbit_reg\n=3'.
+Parameter 1 (\n) = 3
+Found cached RTLIL representation for module `$paramod\Nbit_reg\n=3'.
 Parameter 1 (\n) = 16
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=16'.
 Parameter 1 (\n) = 16
@@ -361,6 +331,10 @@ Parameter 1 (\n) = 1
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=1'.
 Parameter 1 (\n) = 1
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=1'.
+Parameter 1 (\n) = 3
+Found cached RTLIL representation for module `$paramod\Nbit_reg\n=3'.
+Parameter 1 (\n) = 3
+Found cached RTLIL representation for module `$paramod\Nbit_reg\n=3'.
 Parameter 1 (\n) = 16
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=16'.
 Parameter 1 (\n) = 16
@@ -454,7 +428,7 @@ Parameter 1 (\n) = 16
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=16'.
 
 15. Executing FLATTEN pass (flatten design).
-<suppressed ~153 debug messages>
+<suppressed ~159 debug messages>
 
 16. Executing CHECK pass (checking for obvious problems).
 Checking module $paramod\count\n=2...
@@ -505,41 +479,3 @@ Warning: Wire lc4_processor.\o_dmem_towrite [3] is used but has no driver.
 Warning: Wire lc4_processor.\o_dmem_towrite [2] is used but has no driver.
 Warning: Wire lc4_processor.\o_dmem_towrite [1] is used but has no driver.
 Warning: Wire lc4_processor.\o_dmem_towrite [0] is used but has no driver.
-Warning: Wire lc4_processor.\test_regfile_wsel_A [2] is used but has no driver.
-Warning: Wire lc4_processor.\test_regfile_wsel_A [1] is used but has no driver.
-Warning: Wire lc4_processor.\test_regfile_wsel_A [0] is used but has no driver.
-Warning: Wire lc4_processor.\test_regfile_wsel_B [2] is used but has no driver.
-Warning: Wire lc4_processor.\test_regfile_wsel_B [1] is used but has no driver.
-Warning: Wire lc4_processor.\test_regfile_wsel_B [0] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [15] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [14] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [13] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [12] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [11] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [10] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [9] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [8] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [7] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [6] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [5] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [4] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [3] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [2] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [1] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_B [0] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [15] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [14] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [13] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [12] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [11] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [10] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [9] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [8] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [7] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [6] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [5] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [4] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [3] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [2] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [1] is used but has no driver.
-Warning: Wire lc4_processor.\wdata_A [0] is used but has no driver.
