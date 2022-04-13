@@ -112,10 +112,13 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(16) IDEX_rs_data_B(.out(EX_rs_data_B), .in(rs_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_rt_data_A(.out(EX_rt_data_A), .in(rt_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
-   wire EX_is_load_A, EX_nzp_we_A;
+   wire EX_is_load_A, EX_nzp_we_A, EX_is_branch_A, EX_is_store_A, EX_select_pc_plus_one_A;
 
    Nbit_reg #(1) IDEX_is_load_A(.out(EX_is_load_A), .in(is_load_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) IDEX_nzp_we_A(.out(EX_nzp_we_A), .in(nzp_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) IDEX_is_branch_A(.out(EX_is_branch_A), .in(is_branch_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) IDEX_is_store_A(.out(EX_is_store_A), .in(is_store_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) IDEX_select_pc_plus_one_A(.out(EX_select_pc_plus_one_A), .in(select_pc_plus_one_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    // *********************************** END EXECUTE Register ****************************************
                         
    // Instantiate ALUs
@@ -151,45 +154,96 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(3) NZP_Reg_B (.in(nzp_in_B), .out(nzp_B), .clk(clk), .we(EX_nzp_we_B), 
                           .gwe(gwe), .rst(rst));
 
+   // Branch Units
+   wire	is_true_branch_A, is_true_branch_B;
+   wire [2:0] branch_type_A = EX_insn_A[11:9];
+   assign is_true_branch_A = (nzp_A == 3'b010) & (branch_type_A[1] == 1'b1) ? 1'b1: //z
+                             (nzp_A == 3'b001) & (branch_type_A[0] == 1'b1) ? 1'b1: //p
+                             (nzp_A == 3'b100) & (branch_type_A[2] == 1'b1) ? 1'b1: //n
+                             1'b0;
+   wire [2:0] branch_type_B = EX_insn_B[11:9];
+   assign is_true_branch_B = (nzp_B == 3'b010) & (branch_type_B[1] == 1'b1) ? 1'b1: //z
+                             (nzp_B == 3'b001) & (branch_type_B[0] == 1'b1) ? 1'b1: //p
+                             (nzp_B == 3'b100) & (branch_type_B[2] == 1'b1) ? 1'b1: //n
+                              1'b0; 
+
    // ============================================== MEMORY Stage ===============================================
    // ************************************* [Execute to] Memory Register ****************************************
-   wire [15:0] MEM_insn_A, MEM_alu_result_A, MEM_pc_A, MEM_pc_plus_two_A, MEM_rs_data_A, MEM_rt_data_A;
-   wire MEM_is_load_A;
+   wire [15:0] MEM_insn_A, MEM_alu_result_A, MEM_pc_A, MEM_pc_plus_two_A, MEM_rs_data_A, MEM_rt_data_A, MEM_dmem_data_A;
+   wire MEM_is_load_A, MEM_is_branch_A, MEM_is_store_A, MEM_select_pc_plus_one_A;
 
    Nbit_reg #(16) EXMEM_insn_A(.out(MEM_insn_A), .in(EX_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) EXMEM_pc_A(.out(MEM_pc_A), .in(EX_pc_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) EXMEM_pc_plus_two_A(.out(MEM_pc_inc_A), .in(pc_plus_two_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) EXMEM_alu_result_A(.out(MEM_alu_result_A), .in(alu_result_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) EXMEM_rs_data_A(.out(MEM_rs_data_A), .in(EX_rs_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) EXMEM_rt_data_A(.out(MEM_rt_data_A), .in(EX_rt_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) EXMEM_dmem_data_A(.out(MEM_dmem_data_A), .(i_cur_dmem_data), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   
    Nbit_reg #(1) EXMEM_is_load_A(.out(MEM_is_load_A), .in(EX_is_load_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) EXMEM_is_store_A(.out(MEM_is_store_A), .in(EX_is_store_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) EXMEM_is_branch_A(.out(MEM_is_branch_A), .in(EX_is_branch_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) EXMEM_select_pc_plus_one_A(.out(MEM_select_pc_plus_one_A), .in(EX_select_pc_plus_one_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   
    // ****************************************** END Memory Register ********************************************
-                        
-                        // Data Memory
-                        assign o_dmem_addr = is_load ? alu_result :
-                              is_store ? alu_result :
-                              16'b0;
-                        assign o_dmem_towrite = rt_data;
-                        assign o_dmem_we = is_store;
-                     
-                        // regInputMux 
-                        wire 	 [15:0] pc_inc;
-                        cla16 c1(.a(pc),
-                            .b(16'b0),
-                            .cin(1'b1),
-                            .sum(pc_inc));
-                        assign rd_data = is_load == 1'b1 ? i_cur_dmem_data :
+
+   // Data Memory (memory stage)
+   assign o_dmem_addr = MEM_is_load_A ? MEM_alu_result_A :
+                        MEM_is_store_A ? MEM_alu_result_A :
+                        16'b0;
+   assign o_dmem_towrite = MEM_rt_data_A;
+   assign o_dmem_we = MEM_is_store_A;
+   assign MEM_dmem_data = MEM_is_load_A ? MEM_dmem_data_A :
+                          MEM_is_store_A ? o_dmem_towrite :
+                          16'b0;
+
+   // ================================================ Writeback Stage ======================================================
+   // *************************************** [Memory to] Writeback Pipeline Register ***************************************
+   wire [15:0] WB_pc_A, WB_insn_A;
+   wire [15:0] WB_dmem_addr, WB_dmem_data;
+
+   Nbit_reg #(16) MEMWB_pc_A(.out(WB_pc_A), .in(MEM_pc_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) MEMWB_insn_A(.out(WB_insn_A), .in(MEM_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   
+   wire WB_is_load_A, WB_select_pc_plus_one;
+   Nbit_reg #(1) MEMWB_is_load_A(.out(WB_is_load_A), .in(MEM_is_load_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   // ******************************************** END Writeback Pipeline Register ******************************************
+   
+   wire [15:0] WB_rd_data_A, WB_rd_data_B;
+   // regInputMux (writeback stage)
+   assign rd_data = is_load == 1'b1 ? i_cur_dmem_data :
                                select_pc_plus_one == 1'b1 ? pc_inc :
                                alu_result; 
-                     
-                        
-                        
-                        // Branch Unit
-                        wire	is_true_branch;
-                        wire [2:0] branch_type = i_cur_insn[11:9];
-                        assign is_true_branch = (nzp == 3'b010) & (branch_type[1] == 1'b1) ? 1'b1: //z
-                                 (nzp == 3'b001) & (branch_type[0] == 1'b1) ? 1'b1: //p
-                                 (nzp == 3'b100) & (branch_type[2] == 1'b1) ? 1'b1: //n
-                                 1'b0;
-                        assign next_pc = (is_branch & is_true_branch) | is_control_insn ? alu_result : pc_inc;
+
+                        // Assign the next pc and output current pc (writeback stage)
+                        assign next_pc = (is_branch & is_true_branch) | is_control_insn ? alu_result : pc_inc; // next_pc based on which insns come out of decode
                         assign o_cur_pc = pc;
+
+
+                        output wire [ 1:0] test_stall_A,        // is this a stall cycle?  (0: no stall,
+                        output wire [ 1:0] test_stall_B,        // 1: pipeline stall, 2: branch stall, 3: load stall)
+   
+                        output wire [15:0] test_cur_pc_A,       // program counter
+                        output wire [15:0] test_cur_pc_B,
+                        output wire [15:0] test_cur_insn_A,     // instruction bits
+                        output wire [15:0] test_cur_insn_B,
+                        output wire        test_regfile_we_A,   // register file write-enable
+                        output wire        test_regfile_we_B,
+                        output wire [ 2:0] test_regfile_wsel_A, // which register to write
+                        output wire [ 2:0] test_regfile_wsel_B,
+                        output wire [15:0] test_regfile_data_A, // data to write to register file
+                        output wire [15:0] test_regfile_data_B,
+                        output wire        test_nzp_we_A,       // nzp register write enable
+                        output wire        test_nzp_we_B,
+                        output wire [ 2:0] test_nzp_new_bits_A, // new nzp bits
+                        output wire [ 2:0] test_nzp_new_bits_B,
+                        output wire        test_dmem_we_A,      // data memory write enable
+                        output wire        test_dmem_we_B,
+                        output wire [15:0] test_dmem_addr_A,    // address to read/write from/to memory
+                        output wire [15:0] test_dmem_addr_B,
+                        output wire [15:0] test_dmem_data_A,    // data to read/write from/to memory
+                        output wire [15:0] test_dmem_data_B,
+                     
                               
                         // Assign test wires
                         assign test_cur_pc = pc;
