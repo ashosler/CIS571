@@ -228,6 +228,10 @@ Parameter 1 (\n) = 1
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=1'.
 Parameter 1 (\n) = 1
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=1'.
+Parameter 1 (\n) = 1
+Found cached RTLIL representation for module `$paramod\Nbit_reg\n=1'.
+Parameter 1 (\n) = 1
+Found cached RTLIL representation for module `$paramod\Nbit_reg\n=1'.
 Parameter 1 (\n) = 3
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=3'.
 Parameter 1 (\n) = 3
@@ -274,6 +278,10 @@ Found cached RTLIL representation for module `$paramod\Nbit_reg\n=2\r=2'10'.
 Parameter 1 (\n) = 2
 Parameter 2 (\r) = 2'10
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=2\r=2'10'.
+Parameter 1 (\n) = 1
+Found cached RTLIL representation for module `$paramod\Nbit_reg\n=1'.
+Parameter 1 (\n) = 1
+Found cached RTLIL representation for module `$paramod\Nbit_reg\n=1'.
 Parameter 1 (\n) = 1
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=1'.
 Parameter 1 (\n) = 1
@@ -395,7 +403,7 @@ Parameter 1 (\n) = 16
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=16'.
 
 15. Executing FLATTEN pass (flatten design).
-<suppressed ~159 debug messages>
+<suppressed ~163 debug messages>
 
 16. Executing CHECK pass (checking for obvious problems).
 Checking module $paramod\count\n=2...
@@ -424,6 +432,6 @@ Checking module lc4_alu...
 Found and reported 0 problems.
 
 Warnings: 1 unique messages, 1 total
-End of script. Logfile hash: 1a93f1e328, CPU: user 0.52s system 0.01s, MEM: 55.09 MB peak
+End of script. Logfile hash: 3244bc4db4, CPU: user 0.50s system 0.04s, MEM: 55.48 MB peak
 Yosys 0.9+3855 (git sha1 54294957, clang 7.0.1 -fPIC -Os)
-Time spent: 59% 2x check (0 sec), 21% 1x flatten (0 sec), ...
+Time spent: 58% 2x check (0 sec), 22% 1x flatten (0 sec), ...
