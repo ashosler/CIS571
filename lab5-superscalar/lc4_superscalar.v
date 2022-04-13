@@ -125,9 +125,29 @@ module lc4_processor(input wire         clk,             // main clock
    assign DEC_stall_B = increment_by_one ? 2'b01 : DEC_stall_B_temp;
 
    // Bypass logic
-   wire [15:0] DEC_rs_data_A, DEC_rt_data_A, DEC_rs_data_B, DEC_rt_data_B;
-   
-   
+   wire [15:0] DEC_rs_data_A, DEC_rt_data_A, aux_rs_data_B, aux_rt_data_B, DEC_rs_data_B, DEC_rt_data_B;
+   assign DEC_rs_data_A = (EX_regfile_we_A & (EX_wsel_A == r1sel_A)) ? alu_result_A :
+                          (EX_regfile_we_B & (EX_wsel_B == r1sel_A)) ? alu_result_B :
+                          (MEM_regfile_we_A & (MEM_wsel_A == r1sel_A)) ? MEM_rs_data_A :
+                          (MEM_regfile_we_B & (MEM_wsel_B == r1sel_A)) ? MEM_rs_data_B :
+                           rs_data_A;
+   assign DEC_rt_data_A = (EX_regfile_we_A & (EX_wsel_A == r2sel_A)) ? alu_result_A :
+                           (EX_regfile_we_B & (EX_wsel_B == r2sel_A)) ? alu_result_B :
+                           (MEM_regfile_we_A & (MEM_wsel_A == r2sel_A)) ? MEM_rt_data_A :
+                           (MEM_regfile_we_B & (MEM_wsel_B == r2sel_A)) ? MEM_rt_data_B :
+                            rt_data_A;
+   assign aux_rs_data_B = (EX_regfile_we_A & (EX_wsel_A == r1sel_B)) ? alu_result_A :
+                          (EX_regfile_we_B & (EX_wsel_B == r1sel_B)) ? alu_result_B :
+                          (MEM_regfile_we_A & (EX_wsel_A == r1sel_B)) ? MEM_rs_data_A :
+                          (MEM_regfile_we_B & (EX_wsel_B == r1sel_B)) ? MEM_rs_data_B :
+                          rs_data_B;
+   assign aux_rt_data_B = (EX_regfile_we_A & (EX_wsel_A == r2sel_B)) ? alu_result_A :
+                          (EX_regfile_we_B & (EX_wsel_B == r2sel_B)) ? alu_result_B :
+                          (MEM_regfile_we_A & (EX_wsel_A == r2sel_B)) ? MEM_rt_data_A :
+                          (MEM_regfile_we_B & (EX_wsel_B == r2sel_B)) ? MEM_rt_data_B :
+                          rt_data_B;
+   assign DEC_rs_data_B = increment_by_one ? 16'd0 : aux_rs_data_B;
+   assign DEC_rt_data_B = increment_by_one ? 16'd0 : aux_rt_data_B;
 
    // ================================== EXECUTE Stage ================================================
    // ******************************* [Decode to] EXECUTE Register ************************************
@@ -138,11 +158,11 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(16) IDEX_insn_B(.out(EX_insn_B), .in(DEC_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_pc_A(.out(EX_pc_A), .in(DEC_pc_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_pc_B(.out(EX_pc_B), .in(DEC_pc_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IDEX_rs_data_A(.out(EX_rs_data_A), .in(rs_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IDEX_rs_data_B(.out(EX_rs_data_B), .in(rs_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IDEX_rt_data_A(.out(EX_rt_data_A), .in(rt_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IDEX_rt_data_B(.out(EX_rt_data_B), .in(rt_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-
+   Nbit_reg #(16) IDEX_rs_data_A(.out(EX_rs_data_A), .in(DEC_rs_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IDEX_rs_data_B(.out(EX_rs_data_B), .in(DEC_rs_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IDEX_rt_data_A(.out(EX_rt_data_A), .in(DEC_rt_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IDEX_rt_data_B(.out(EX_rt_data_B), .in(DEC_rt_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   
    Nbit_reg #(3) IDEX_wsel_A(.out(EX_wsel_A), .in(wsel_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(3) IDEX_wsel_B(.out(EX_wsel_B), .in(wsel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
