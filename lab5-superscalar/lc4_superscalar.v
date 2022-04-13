@@ -62,25 +62,35 @@ module lc4_processor(input wire         clk,             // main clock
    wire [15:0] pc_B, pc_plus_two;
    cla16 c0 (.a(pc), .b(16'h0001), .cin(1'b0), .sum(pc_B));
    cla16 pc_plus_two_adder (.a(pc), .b(16'h0002), .cin(1'b0), .sum(pc_plus_two));
-   //assign next_pc = increment_by_one ? pc_B : pc_plus_two;
+   assign next_pc = increment_by_one ? pc_B : pc_plus_two;
+   assign o_cur_pc = pc;
 
-   // 
-   
-   // fetch insns
-   wire FET_insn_A, FET_insn_B;
+   // fetch insns and pcs based on switching
+   wire IF_insn_A, IF_insn_B, IF_pc_A, IF_pc_B;
+   assign IF_insn_A = increment_by_one ? DEC_insn_B : i_cur_insn_A;
+   assign IF_insn_B = increment_by_one ? i_cur_insn_A : i_cur_insn_B;
+   assign IF_pc_A = increment_by_one ? DEC_pc_B : pc;
+   assign IF_pc_B = increment_by_one ? pc : pc_B;
 
-   wire [1:0] f_stall_A, f_stall_B;
+   wire [1:0] IF_stall_A, IF_stall_B;
+   assign IF_stall_A = (i_cur_insn_A == 16'd0) ? 2'b10 : 2'b0;
+   assign IF_stall_B = (i_cur_insn_B == 16'd0) ? 2'b10 : 2'b0;
 
    // =================================== DECODE Stage ===============================================
    // *************** [Fetch to] Decode Register ********************
    wire [15:0] DEC_insn_A, DEC_insn_B, DEC_pc_A, DEC_pc_B;
 
-   Nbit_reg #(16) IFID_insn_A(.out(DEC_insn_A), .in(i_cur_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IFID_insn_B(.out(DEC_insn_B), .in(i_cur_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IFID_pc_A(.out(DEC_pc_A), .in(pc), .we(1'b1), .clk(clk), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IFID_pc_B(.out(DEC_pc_B), .in(pc_B), .we(1'b1), .clk(clk), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IFID_insn_A(.out(DEC_insn_A), .in(IF_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IFID_insn_B(.out(DEC_insn_B), .in(IF_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IFID_pc_A(.out(DEC_pc_A), .in(IF_pc_A), .we(1'b1), .clk(clk), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IFID_pc_B(.out(DEC_pc_B), .in(IF_pc_B), .we(1'b1), .clk(clk), .gwe(gwe), .rst(rst));
 
    // *************** END Decode Register ***************************
+
+   // Stall registers
+   wire [1:0] DEC_stall_A, DEC_stall_B;
+   Nbit_reg #(2) IFID_stall_A(.out(DEC_stall_A), .in(IF_stall_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(2) IFID_stall_B(.out(DEC_stall_B), .in(IF_stall_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
    // Instantiate decoders
    wire [2:0] r1sel_A, r2sel_A, wsel_A;
@@ -202,7 +212,7 @@ module lc4_processor(input wire         clk,             // main clock
                       alu_result_B;
 
    // Next pc calculated here
-   assign next_pc = (EX_is_branch_A & is_true_branch_A) | EX_is_control_insn_A ? alu_result_A : pc_plus_two_A; // next_pc based on which insns come out of decode
+   //assign next_pc = (EX_is_branch_A & is_true_branch_A) | EX_is_control_insn_A ? alu_result_A : pc_plus_two_A; // next_pc based on which insns come out of decode
 
    // ============================================== MEMORY Stage ===============================================
    // ************************************* [Execute to] Memory Register ****************************************
@@ -295,9 +305,7 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(16) MEMWB_next_pc(.out(WB_next_pc), .in(MEM_next_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    // ******************************************** END Writeback Pipeline Register ******************************************
 
-   // Assign the next pc and output current pc (writeback stage)                     
-   assign o_cur_pc = WB_pc_A;
-
+   // Assign the next pc and output current pc (writeback stage)                    
    assign test_cur_pc_A = WB_pc_A;
    assign test_cur_insn_A = WB_insn_A;
    assign test_regfile_data_A = WB_rd_data_A;
