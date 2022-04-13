@@ -88,9 +88,9 @@ module lc4_processor(input wire         clk,             // main clock
    // *************************************** END Decode Register *************************************
 
    // Stall registers
-   wire [1:0] DEC_stall_A, DEC_stall_B;
+   wire [1:0] DEC_stall_A, DEC_stall_B_temp, DEC_stall_B;
    Nbit_reg #(2, 2'b10) IFID_stall_A(.out(DEC_stall_A), .in(IF_stall_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(2, 2'b10) IFID_stall_B(.out(DEC_stall_B), .in(IF_stall_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(2, 2'b10) IFID_stall_B(.out(DEC_stall_B_temp), .in(IF_stall_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
    // Instantiate decoders
    wire [2:0] r1sel_A, r2sel_A, wsel_A;
@@ -122,6 +122,7 @@ module lc4_processor(input wire         clk,             // main clock
    // Determine if we should increment pc by two or one
    wire increment_by_one;
    assign increment_by_one = (((wsel_A == r1sel_B) & r1re_B | (wsel_A == r2sel_B) & r2re_B)) & regfile_we_A;
+   assign DEC_stall_B = increment_by_one ? 2'b01 : DEC_stall_B_temp;
 
    // ================================== EXECUTE Stage ================================================
    // ******************************* [Decode to] EXECUTE Register ************************************
@@ -162,7 +163,6 @@ module lc4_processor(input wire         clk,             // main clock
    wire [1:0] EX_stall_A, EX_stall_B;
    Nbit_reg #(2, 2'b10) IDEX_stall_A(.out(EX_stall_A), .in(DEC_stall_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(2, 2'b10) IDEX_stall_B(.out(EX_stall_B), .in(DEC_stall_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   wire [1:0] new_stall_B = increment_by_one ? 2'b01 : EX_stall_B;
                         
    // Instantiate ALUs
    wire [15:0] alu_result_A, alu_result_B;                                            
@@ -262,7 +262,7 @@ module lc4_processor(input wire         clk,             // main clock
    // Stall registers
    wire [1:0] MEM_stall_A, MEM_stall_B;
    Nbit_reg #(2, 2'b10) EXMEM_stall_A(.out(MEM_stall_A), .in(EX_stall_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(2, 2'b10) EXMEM_stall_B(.out(MEM_stall_B), .in(new_stall_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(2, 2'b10) EXMEM_stall_B(.out(MEM_stall_B), .in(EX_stall_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    
    // Data Memory (memory stage)
    wire [15:0] MEM_dmem_addr_A, MEM_dmem_towrite_A, MEM_dmem_data_A, MEM_dmem_addr_B, MEM_dmem_towrite_B, MEM_dmem_data_B;
