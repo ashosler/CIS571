@@ -124,6 +124,9 @@ module lc4_processor(input wire         clk,             // main clock
    assign increment_by_one = (((wsel_A == r1sel_B) & r1re_B | (wsel_A == r2sel_B) & r2re_B)) & regfile_we_A;
    assign DEC_stall_B = increment_by_one ? 2'b01 : DEC_stall_B_temp;
 
+//    // Bypass logic
+//    assign DEC
+
    // ================================== EXECUTE Stage ================================================
    // ******************************* [Decode to] EXECUTE Register ************************************
    wire [15:0] EX_insn_A, EX_insn_B, EX_pc_A, EX_pc_B, EX_rs_data_A, EX_rs_data_B, EX_rt_data_A, EX_rt_data_B;
