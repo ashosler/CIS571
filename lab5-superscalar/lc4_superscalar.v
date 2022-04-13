@@ -124,8 +124,10 @@ module lc4_processor(input wire         clk,             // main clock
    assign increment_by_one = (((wsel_A == r1sel_B) & r1re_B | (wsel_A == r2sel_B) & r2re_B)) & regfile_we_A;
    assign DEC_stall_B = increment_by_one ? 2'b01 : DEC_stall_B_temp;
 
-//    // Bypass logic
-//    assign DEC
+   // Bypass logic
+   wire [15:0] DEC_rs_data_A, DEC_rt_data_A, DEC_rs_data_B, DEC_rt_data_B;
+   
+   
 
    // ================================== EXECUTE Stage ================================================
    // ******************************* [Decode to] EXECUTE Register ************************************
@@ -144,8 +146,8 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(3) IDEX_wsel_A(.out(EX_wsel_A), .in(wsel_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(3) IDEX_wsel_B(.out(EX_wsel_B), .in(wsel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
-   wire EX_is_load_A, EX_nzp_we_A, EX_is_branch_A, EX_is_store_A, EX_select_pc_plus_one_A, EX_is_control_insn_A,
-        EX_is_load_B, EX_nzp_we_B, EX_is_branch_B, EX_is_store_B, EX_select_pc_plus_one_B, EX_is_control_insn_B;
+   wire EX_is_load_A, EX_nzp_we_A, EX_is_branch_A, EX_is_store_A, EX_select_pc_plus_one_A, EX_is_control_insn_A, EX_regfile_we_A,
+        EX_is_load_B, EX_nzp_we_B, EX_is_branch_B, EX_is_store_B, EX_select_pc_plus_one_B, EX_is_control_insn_B, EX_regfile_we_B;
 
    Nbit_reg #(1) IDEX_is_load_A(.out(EX_is_load_A), .in(is_load_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) IDEX_nzp_we_A(.out(EX_nzp_we_A), .in(nzp_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -153,6 +155,7 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(1) IDEX_is_store_A(.out(EX_is_store_A), .in(is_store_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) IDEX_select_pc_plus_one_A(.out(EX_select_pc_plus_one_A), .in(select_pc_plus_one_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) IDEX_is_control_A(.out(EX_is_control_insn_A), .in(is_control_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) IDEX_regfile_we_A(.out(EX_regfile_we_A), .in(regfile_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
     
    Nbit_reg #(1) IDEX_is_load_B(.out(EX_is_load_B), .in(is_load_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) IDEX_nzp_we_B(.out(EX_nzp_we_B), .in(nzp_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -160,6 +163,8 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(1) IDEX_is_store_B(.out(EX_is_store_B), .in(is_store_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) IDEX_select_pc_plus_one_B(.out(EX_select_pc_plus_one_B), .in(select_pc_plus_one_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); 
    Nbit_reg #(1) IDEX_is_control_B(.out(EX_is_control_insn_B), .in(is_control_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) IDEX_regfile_we_B(.out(EX_regfile_we_B), .in(regfile_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
    // *********************************** END EXECUTE Register ****************************************
 
    // Stall registers
@@ -230,7 +235,8 @@ module lc4_processor(input wire         clk,             // main clock
    wire [15:0] MEM_insn_A, MEM_alu_result_A, MEM_pc_A, MEM_rs_data_A, MEM_rt_data_A, MEM_rd_data_A, MEM_next_pc, MEM_dmem_data,
                MEM_insn_B, MEM_alu_result_B, MEM_pc_B, MEM_rs_data_B, MEM_rt_data_B, MEM_rd_data_B;
    wire [2:0] MEM_nzp_new_bits_A, MEM_nzp_new_bits_B, MEM_wsel_A, MEM_wsel_B;
-   wire MEM_is_load_A, MEM_is_store_A, MEM_nzp_we_A, MEM_is_load_B, MEM_is_store_B, MEM_nzp_we_B;
+   wire MEM_is_load_A, MEM_is_store_A, MEM_nzp_we_A, MEM_is_load_B, MEM_is_store_B, MEM_nzp_we_B,
+        MEM_regfile_we_A, MEM_regfile_we_B;
 
    Nbit_reg #(16) EXMEM_insn_A(.out(MEM_insn_A), .in(EX_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) EXMEM_pc_A(.out(MEM_pc_A), .in(EX_pc_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -259,6 +265,8 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(1) EXMEM_is_load_B(.out(MEM_is_load_B), .in(EX_is_load_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) EXMEM_is_store_B(.out(MEM_is_store_B), .in(EX_is_store_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) EXMEM_nzp_we_B(.out(MEM_nzp_we_B), .in(EX_nzp_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) EXMEM_regfile_we_A(.out(MEM_regfile_we_A),  .in(EX_regfile_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) EXMEM_regfile_we_B(.out(MEM_regfile_we_B),  .in(EX_regfile_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    
    // ****************************************** END Memory Register ********************************************
 
@@ -309,7 +317,7 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(3) MEMWB_nzp_new_bits_A(.out(WB_nzp_new_bits_A), .in(MEM_nzp_new_bits_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(3) MEMWB_wsel_A(.out(WB_wsel_A), .in(MEM_wsel_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
-   Nbit_reg #(1) MEMWB_regfile_we_A(.out(WB_regfile_we_A), .in(MEM_dmem_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) MEMWB_regfile_we_A(.out(WB_regfile_we_A), .in(MEM_regfile_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) MEMWB_nzp_we_A(.out(WB_nzp_we_A), .in(MEM_nzp_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) MEMWB_dmem_we_A(.out(WB_dmem_we_A), .in(MEM_dmem_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
@@ -322,7 +330,7 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(3) MEMWB_nzp_new_bits_B(.out(WB_nzp_new_bits_B), .in(MEM_nzp_new_bits_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(3) MEMWB_wsel_B(.out(WB_wsel_B), .in(MEM_wsel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    
-   Nbit_reg #(1) MEMWB_regfile_we_B(.out(WB_regfile_we_B), .in(MEM_dmem_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) MEMWB_regfile_we_B(.out(WB_regfile_we_B), .in(MEM_regfile_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) MEMWB_nzp_we_B(.out(WB_nzp_we_B), .in(MEM_nzp_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) MEMWB_dmem_we_B(.out(WB_dmem_we_B), .in(MEM_dmem_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
