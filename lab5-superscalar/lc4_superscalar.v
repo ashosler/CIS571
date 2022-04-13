@@ -111,14 +111,13 @@ module lc4_processor(input wire         clk,             // main clock
 
    // Register Data Wires
    wire [15:0] 	 rs_data_A, rt_data_A, rs_data_B, rt_data_B;
-   wire [15:0]     wdata_A, wdata_B;
       
    // Instantiate Register File
    lc4_regfile_ss Register_ss (.clk(clk), .gwe(gwe), .rst(rst),
                   .i_rs_A(r1sel_A), .o_rs_data_A(rs_data_A), .i_rt_A(r2sel_A), .o_rt_data_A(rt_data_A),
                   .i_rs_B(r2sel_B), .o_rs_data_B(rs_data_B), .i_rt_B(r2sel_B), .o_rt_data_B(rt_data_B),
-                  .i_rd_A(wsel_A), .i_wdata_A(wdata_A), .i_rd_we_A(regfile_we_A),
-                  .i_rd_B(wsel_B), .i_wdata_B(wdata_B), .i_rd_we_B(regfile_we_B)); // wdata_A and B should be plugged from writeback
+                  .i_rd_A(wsel_A), .i_wdata_A(WB_rd_data_A), .i_rd_we_A(regfile_we_A),
+                  .i_rd_B(wsel_B), .i_wdata_B(WB_rd_data_B), .i_rd_we_B(regfile_we_B));
 
    // Determine if we should increment pc by two or one
    wire increment_by_one;
@@ -135,6 +134,7 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(16) IDEX_rs_data_A(.out(EX_rs_data_A), .in(rs_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_rs_data_B(.out(EX_rs_data_B), .in(rs_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) IDEX_rt_data_A(.out(EX_rt_data_A), .in(rt_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IDEX_rt_data_B(.out(EX_rt_data_B), .in(rt_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
    wire EX_is_load_A, EX_nzp_we_A, EX_is_branch_A, EX_is_store_A, EX_select_pc_plus_one_A, EX_is_control_insn_A,
         EX_is_load_B, EX_nzp_we_B, EX_is_branch_B, EX_is_store_B, EX_select_pc_plus_one_B, EX_is_control_insn_B;

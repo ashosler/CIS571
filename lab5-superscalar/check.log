@@ -193,22 +193,6 @@ Warning: Wire lc4_processor.\wdata_B [3] is used but has no driver.
 Warning: Wire lc4_processor.\wdata_B [2] is used but has no driver.
 Warning: Wire lc4_processor.\wdata_B [1] is used but has no driver.
 Warning: Wire lc4_processor.\wdata_B [0] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [15] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [14] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [13] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [12] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [11] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [10] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [9] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [8] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [7] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [6] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [5] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [4] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [3] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [2] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [1] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [0] is used but has no driver.
 Checking module lc4_regfile_ss...
 Checking module lc4_divider_one_iter...
 Checking module lc4_divider...
@@ -217,7 +201,7 @@ Checking module cla16...
 Checking module gp4...
 Checking module gp1...
 Checking module lc4_alu...
-Found and reported 87 problems.
+Found and reported 71 problems.
 
 14. Executing HIERARCHY pass (managing design hierarchy).
 Parameter 1 (\n) = 16
@@ -391,6 +375,8 @@ Parameter 1 (\n) = 16
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=16'.
 Parameter 1 (\n) = 16
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=16'.
+Parameter 1 (\n) = 16
+Found cached RTLIL representation for module `$paramod\Nbit_reg\n=16'.
 Parameter 1 (\n) = 2
 Parameter 2 (\r) = 2'10
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=2\r=2'10'.
@@ -468,7 +454,7 @@ Parameter 1 (\n) = 16
 Found cached RTLIL representation for module `$paramod\Nbit_reg\n=16'.
 
 15. Executing FLATTEN pass (flatten design).
-<suppressed ~152 debug messages>
+<suppressed ~153 debug messages>
 
 16. Executing CHECK pass (checking for obvious problems).
 Checking module $paramod\count\n=2...
@@ -557,19 +543,3 @@ Warning: Wire lc4_processor.\wdata_A [3] is used but has no driver.
 Warning: Wire lc4_processor.\wdata_A [2] is used but has no driver.
 Warning: Wire lc4_processor.\wdata_A [1] is used but has no driver.
 Warning: Wire lc4_processor.\wdata_A [0] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [15] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [14] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [13] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [12] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [11] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [10] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [9] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [8] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [7] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [6] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [5] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [4] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [3] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [2] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [1] is used but has no driver.
-Warning: Wire lc4_processor.\EX_rt_data_B [0] is used but has no driver.
