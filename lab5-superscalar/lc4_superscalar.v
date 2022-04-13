@@ -48,16 +48,28 @@ module lc4_processor(input wire         clk,             // main clock
 
    /***  YOUR CODE HERE ***/
    assign led_data = switch_data;
+   // ===================================== FETCH Stage ===============================================
+   // ********************************** Pipeline Register Fetch **************************************
 
    wire [15:0] pc;               // Current program counter (read out from pc_reg)
    wire [15:0] next_pc;          // Next program counter (computed and fed into pc_reg)
 
    // Program counter register, starts at 8200h at bootup
    Nbit_reg #(16, 16'h8200) pc_reg (.in(WB_next_pc), .out(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   
+
+   // ******************************* END Pipeline Register Fetch **************************************
    // Program counter for pipe B instruction
-   wire [15:0] pc_B;
-   cla16 c0 (.a(pc), .b(16'b0), .cin(1'b1), .sum(pc_B));
+   wire [15:0] pc_B, pc_plus_two;
+   cla16 c0 (.a(pc), .b(16'h0001), .cin(1'b0), .sum(pc_B));
+   cla16 pc_plus_two_adder (.a(pc), .b(16'h0002), .cin(1'b0), .sum(pc_plus_two));
+   //assign next_pc = increment_by_one ? pc_B : pc_plus_two;
+
+   // 
+   
+   // fetch insns
+   wire FET_insn_A, FET_insn_B;
+
+   wire [1:0] f_stall_A, f_stall_B;
 
    // =================================== DECODE Stage ===============================================
    // *************** [Fetch to] Decode Register ********************
@@ -99,6 +111,10 @@ module lc4_processor(input wire         clk,             // main clock
                   .i_rs_B(r2sel_B), .o_rs_data_B(rs_data_B), .i_rt_B(r2sel_B), .o_rt_data_B(rt_data_B),
                   .i_rd_A(wsel_A), .i_wdata_A(wdata_A), .i_rd_we_A(regfile_we_A),
                   .i_rd_B(wsel_B), .i_wdata_B(wdata_B), .i_rd_we_B(regfile_we_B)); // wdata_A and B should be plugged from writeback
+
+   // Determine if we should increment pc by two or one
+   wire increment_by_one;
+   assign increment_by_one = (((wsel_A == r1sel_B) & r1re_B | (wsel_A == r2sel_B) & r2re_B)) & regfile_we_A;
 
    // ================================== EXECUTE Stage ================================================
    // ******************************* [Decode to] EXECUTE Register ************************************
