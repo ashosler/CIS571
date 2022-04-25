@@ -231,8 +231,8 @@ module lc4_processor(input wire         clk,             // main clock
 
    // Calculate incremented pc's
    wire [15:0] pc_plus_two_A, pc_plus_two_B;
-   cla16 PC_Incrementer_A (.a(EX_pc_A), .b(16'h0001), .cin(1'b1), .sum(pc_plus_two_A));
-   cla16 PC_Incrementer_B (.a(EX_pc_B), .b(16'h0001), .cin(1'b1), .sum(pc_plus_two_B));
+   cla16 PC_Incrementer_A (.a(EX_pc_A), .b(16'h0002), .cin(1'b0), .sum(pc_plus_two_A));
+   cla16 PC_Incrementer_B (.a(EX_pc_B), .b(16'h0002), .cin(1'b0), .sum(pc_plus_two_B));
 
    // NZP Register (CMPs nzp_we) 
    /* Need only one nzp register... */
