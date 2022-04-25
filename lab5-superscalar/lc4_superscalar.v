@@ -197,7 +197,7 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(2, 2'b10) IDEX_stall_B(.out(EX_stall_B), .in(DEC_stall_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
    // Bypass logic
-   wire EX_aux_rs_data_A, EX_aux_rt_data_A, EX_aux_rs_data_B, EX_aux_rt_data_B;
+   wire [15:0] EX_aux_rs_data_A, EX_aux_rt_data_A, EX_aux_rs_data_B, EX_aux_rt_data_B;
    assign EX_aux_rs_data_A = (MEM_regfile_we_A & (MEM_wsel_A == EX_r1sel_A)) ? MEM_rs_data_A :
                              (MEM_regfile_we_B & (MEM_wsel_B == EX_r1sel_A)) ? MEM_rs_data_B :
                              (WB_regfile_we_A & (WB_wsel_A == EX_r1sel_A)) ? WB_rs_data_A :
@@ -235,7 +235,7 @@ module lc4_processor(input wire         clk,             // main clock
 
    // NZP Register (CMPs nzp_we) 
    /* Need only one nzp register... */
-   wire [2:0] 		nzp_A, nzp_in_A, nzp_B, nzp_in_B;
+   wire [2:0] 		nzp, nzp_in_A, nzp_in_B, nzp_in;
    wire [15:0] 		nzp_data_A, nzp_data_B;
    assign nzp_data_A = EX_is_load_A ? i_cur_dmem_data :             // where is dmem data coming from?
                     EX_insn_A[15:12] == 4'b1111 ? pc_plus_two_A : //TRAP (or should it be all control insn?)
@@ -243,8 +243,6 @@ module lc4_processor(input wire         clk,             // main clock
    assign nzp_in_A = nzp_data_A == 16'b0 ? 3'b010 :
                    nzp_data_A[15] == 1'b0 ? 3'b001 :
                    3'b100;
-   Nbit_reg #(3) NZP_Reg_A (.in(nzp_in_A), .out(nzp_A), .clk(clk), .we(EX_nzp_we_A), 
-                          .gwe(gwe), .rst(rst));
 
    assign nzp_data_B = EX_is_load_B ? i_cur_dmem_data :             // where is dmem data coming from?
                        (EX_insn_B[15:12] == 4'b1111) ? pc_plus_two_B : //TRAP (or should it be all control insn?)
@@ -252,20 +250,26 @@ module lc4_processor(input wire         clk,             // main clock
    assign nzp_in_B = (nzp_data_B == 16'b0) ? 3'b010 :
                      (nzp_data_B[15] == 1'b0) ? 3'b001 :
                      3'b100;
-   Nbit_reg #(3) NZP_Reg_B (.in(nzp_in_B), .out(nzp_B), .clk(clk), .we(EX_nzp_we_B), 
+
+   assign nzp_in = EX_nzp_we_B & (!EX_is_store_B & !EX_is_load_B) ? nzp_in_B :
+                   EX_nzp_we_A & (!EX_is_store_A & !EX_is_load_A) ? nzp_in_A : nzp;
+               
+
+
+   Nbit_reg #(3) NZP_Reg (.in(nzp_in), .out(nzp), .clk(clk), .we(EX_nzp_we_A | EX_nzp_we_B), 
                           .gwe(gwe), .rst(rst));
 
    // Branch Units
    wire	is_true_branch_A, is_true_branch_B;
    wire [2:0] branch_type_A = EX_insn_A[11:9];
-   assign is_true_branch_A = (nzp_A == 3'b010) & (branch_type_A[1] == 1'b1) ? 1'b1: //z
-                             (nzp_A == 3'b001) & (branch_type_A[0] == 1'b1) ? 1'b1: //p
-                             (nzp_A == 3'b100) & (branch_type_A[2] == 1'b1) ? 1'b1: //n
+   assign is_true_branch_A = (nzp_in_A == 3'b010) & (branch_type_A[1] == 1'b1) ? 1'b1: //z
+                             (nzp_in_A == 3'b001) & (branch_type_A[0] == 1'b1) ? 1'b1: //p
+                             (nzp_in_A == 3'b100) & (branch_type_A[2] == 1'b1) ? 1'b1: //n
                              1'b0;
    wire [2:0] branch_type_B = EX_insn_B[11:9];
-   assign is_true_branch_B = (nzp_B == 3'b010) & (branch_type_B[1] == 1'b1) ? 1'b1: //z
-                             (nzp_B == 3'b001) & (branch_type_B[0] == 1'b1) ? 1'b1: //p
-                             (nzp_B == 3'b100) & (branch_type_B[2] == 1'b1) ? 1'b1: //n
+   assign is_true_branch_B = (nzp_in_B == 3'b010) & (branch_type_B[1] == 1'b1) ? 1'b1: //z
+                             (nzp_in_B == 3'b001) & (branch_type_B[0] == 1'b1) ? 1'b1: //p
+                             (nzp_in_B == 3'b100) & (branch_type_B[2] == 1'b1) ? 1'b1: //n
                               1'b0; 
 
    // Register input calcuted here and then passed through writeback
