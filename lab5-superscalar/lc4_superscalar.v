@@ -126,25 +126,25 @@ module lc4_processor(input wire         clk,             // main clock
 
    // Bypass logic
    wire [15:0] DEC_rs_data_A, DEC_rt_data_A, aux_rs_data_B, aux_rt_data_B, DEC_rs_data_B, DEC_rt_data_B;
-   assign DEC_rs_data_A = (EX_regfile_we_A & (EX_wsel_A == r1sel_A)) ? alu_result_A :
-                          (EX_regfile_we_B & (EX_wsel_B == r1sel_A)) ? alu_result_B :
-                          (MEM_regfile_we_A & (MEM_wsel_A == r1sel_A)) ? MEM_rs_data_A :
-                          (MEM_regfile_we_B & (MEM_wsel_B == r1sel_A)) ? MEM_rs_data_B :
+   assign DEC_rs_data_A = (EX_regfile_we_B & (EX_wsel_B == r1sel_A)) ? alu_result_B :
+                          (EX_regfile_we_A & (EX_wsel_A == r1sel_A)) ? alu_result_A :
+                          (MEM_regfile_we_B & (MEM_wsel_B == r1sel_A)) ? MEM_rd_data_B :
+                          (MEM_regfile_we_A & (MEM_wsel_A == r1sel_A)) ? MEM_rd_data_A :
                            rs_data_A;
-   assign DEC_rt_data_A = (EX_regfile_we_A & (EX_wsel_A == r2sel_A)) ? alu_result_A :
-                           (EX_regfile_we_B & (EX_wsel_B == r2sel_A)) ? alu_result_B :
-                           (MEM_regfile_we_A & (MEM_wsel_A == r2sel_A)) ? MEM_rt_data_A :
-                           (MEM_regfile_we_B & (MEM_wsel_B == r2sel_A)) ? MEM_rt_data_B :
+   assign DEC_rt_data_A = (EX_regfile_we_B & (EX_wsel_B == r2sel_A)) ? alu_result_B :
+                           (EX_regfile_we_A & (EX_wsel_A == r2sel_A)) ? alu_result_A :
+                           (MEM_regfile_we_B & (MEM_wsel_B == r2sel_A)) ? MEM_rd_data_B :
+                           (MEM_regfile_we_A & (MEM_wsel_A == r2sel_A)) ? MEM_rd_data_A :
                             rt_data_A;
-   assign aux_rs_data_B = (EX_regfile_we_A & (EX_wsel_A == r1sel_B)) ? alu_result_A :
-                          (EX_regfile_we_B & (EX_wsel_B == r1sel_B)) ? alu_result_B :
-                          (MEM_regfile_we_A & (EX_wsel_A == r1sel_B)) ? MEM_rs_data_A :
-                          (MEM_regfile_we_B & (EX_wsel_B == r1sel_B)) ? MEM_rs_data_B :
+   assign aux_rs_data_B = (EX_regfile_we_B & (EX_wsel_B == r1sel_B)) ? alu_result_B :
+                          (EX_regfile_we_A & (EX_wsel_A == r1sel_B)) ? alu_result_A :
+                          (MEM_regfile_we_B & (EX_wsel_B == r1sel_B)) ? MEM_rd_data_B :
+                          (MEM_regfile_we_A & (EX_wsel_A == r1sel_B)) ? MEM_rd_data_A :
                           rs_data_B;
-   assign aux_rt_data_B = (EX_regfile_we_A & (EX_wsel_A == r2sel_B)) ? alu_result_A :
-                          (EX_regfile_we_B & (EX_wsel_B == r2sel_B)) ? alu_result_B :
-                          (MEM_regfile_we_A & (EX_wsel_A == r2sel_B)) ? MEM_rt_data_A :
-                          (MEM_regfile_we_B & (EX_wsel_B == r2sel_B)) ? MEM_rt_data_B :
+   assign aux_rt_data_B = (EX_regfile_we_B & (EX_wsel_B == r2sel_B)) ? alu_result_B :
+                          (EX_regfile_we_A & (EX_wsel_A == r2sel_B)) ? alu_result_A :
+                          (MEM_regfile_we_B & (EX_wsel_B == r2sel_B)) ? MEM_rd_data_B :
+                          (MEM_regfile_we_A & (EX_wsel_A == r2sel_B)) ? MEM_rd_data_A :
                           rt_data_B;
    assign DEC_rs_data_B = increment_by_one ? 16'd0 : aux_rs_data_B;
    assign DEC_rt_data_B = increment_by_one ? 16'd0 : aux_rt_data_B;
