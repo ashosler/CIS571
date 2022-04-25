@@ -198,27 +198,28 @@ module lc4_processor(input wire         clk,             // main clock
 
    // Bypass logic
    wire [15:0] EX_aux_rs_data_A, EX_aux_rt_data_A, EX_aux_rs_data_B, EX_aux_rt_data_B;
-   assign EX_aux_rs_data_A = (MEM_regfile_we_A & (MEM_wsel_A == EX_r1sel_A)) ? MEM_rs_data_A :
-                             (MEM_regfile_we_B & (MEM_wsel_B == EX_r1sel_A)) ? MEM_rs_data_B :
-                             (WB_regfile_we_A & (WB_wsel_A == EX_r1sel_A)) ? WB_rs_data_A :
-                             (WB_regfile_we_B & (WB_wsel_B == EX_r1sel_A)) ? WB_rs_data_B : 
+   assign EX_aux_rs_data_A = (MEM_regfile_we_B & (MEM_wsel_B == EX_r1sel_A)) ? MEM_rd_data_B :
+                             (MEM_regfile_we_A & (MEM_wsel_A == EX_r1sel_A)) ? MEM_rd_data_A :
+                             (WB_regfile_we_B & (WB_wsel_B == EX_r1sel_A)) ? WB_rd_data_B : 
+                             (WB_regfile_we_A & (WB_wsel_A == EX_r1sel_A)) ? WB_rd_data_A :
                              EX_rs_data_A;
-   assign EX_aux_rt_data_A = (MEM_regfile_we_A & (MEM_wsel_A == EX_r2sel_A)) ? MEM_rt_data_A :
-                             (MEM_regfile_we_B & (MEM_wsel_B == EX_r2sel_A)) ? MEM_rt_data_B :
-                             (WB_regfile_we_A & (WB_wsel_A == EX_r2sel_A)) ? WB_rt_data_A :
-                             (WB_regfile_we_B & (WB_wsel_B == EX_r2sel_A)) ? WB_rt_data_B : 
+
+   assign EX_aux_rt_data_A = (MEM_regfile_we_B & (MEM_wsel_B == EX_r2sel_A)) ? MEM_rd_data_B :
+                             (MEM_regfile_we_A & (MEM_wsel_A == EX_r2sel_A)) ? MEM_rd_data_A :
+                             (WB_regfile_we_B & (WB_wsel_B == EX_r2sel_A)) ? WB_rd_data_B : 
+                             (WB_regfile_we_A & (WB_wsel_A == EX_r2sel_A)) ? WB_rd_data_A :
                              EX_rt_data_A;
 
-   assign EX_aux_rs_data_B = (MEM_regfile_we_A & (MEM_wsel_A == EX_r1sel_B)) ? MEM_rs_data_A :
-                               (MEM_regfile_we_B & (MEM_wsel_B == EX_r1sel_B)) ? MEM_rs_data_B :
-                               (WB_regfile_we_A & (WB_wsel_A == EX_r1sel_B)) ? WB_rs_data_A :
-                               (WB_regfile_we_A & (WB_wsel_B == EX_r1sel_B)) ? WB_rs_data_B :
-                               EX_rs_data_B;
-   assign EX_aux_rt_data_B = (MEM_regfile_we_A & (MEM_wsel_A == EX_r2sel_B)) ? MEM_rt_data_A :
-                               (MEM_regfile_we_B & (MEM_wsel_B == EX_r2sel_B)) ? MEM_rt_data_B :
-                               (WB_regfile_we_A & (WB_wsel_A == EX_r2sel_B)) ? WB_rt_data_A :
-                               (WB_regfile_we_A & (WB_wsel_B == EX_r2sel_B)) ? WB_rt_data_B :
-                               EX_rt_data_B; 
+   assign EX_aux_rs_data_B = (MEM_regfile_we_B & (MEM_wsel_B == EX_r1sel_B)) ? MEM_rd_data_B :
+                             (MEM_regfile_we_A & (MEM_wsel_A == EX_r1sel_B)) ? MEM_rd_data_A :
+                             (WB_regfile_we_A & (WB_wsel_B == EX_r1sel_B)) ? WB_rd_data_B :  
+                             (WB_regfile_we_A & (WB_wsel_A == EX_r1sel_B)) ? WB_rd_data_A :
+                              EX_rs_data_B;
+   assign EX_aux_rt_data_B = (MEM_regfile_we_B & (MEM_wsel_B == EX_r2sel_B)) ? MEM_rd_data_B :
+                             (MEM_regfile_we_A & (MEM_wsel_A == EX_r2sel_B)) ? MEM_rd_data_A :
+                             (WB_regfile_we_A & (WB_wsel_B == EX_r2sel_B)) ? WB_rd_data_B :
+                             (WB_regfile_we_A & (WB_wsel_A == EX_r2sel_B)) ? WB_rd_data_A :
+                              EX_rt_data_B; 
      
                         
    // Instantiate ALUs
@@ -440,48 +441,48 @@ module lc4_processor(input wire         clk,             // main clock
     * to conditionally print out information.
     */
    always @(posedge gwe) begin
-      // $display("%d %h %h %h %h %h", $time, f_pc, d_pc, e_pc, m_pc, test_cur_pc);
-      // if (o_dmem_we)
-      //   $display("%d STORE %h <= %h", $time, o_dmem_addr, o_dmem_towrite);
+     //  $display("%d", test_cur_pc_A);
+     //  if (o_dmem_we)
+     //    $display("%d STORE %h <= %h", $time, o_dmem_addr, o_dmem_towrite);
 
-      // Start each $display() format string with a %d argument for time
-      // it will make the output easier to read.  Use %b, %h, and %d
-      // for binary, hex, and decimal output of additional variables.
-      // You do not need to add a \n at the end of your format string.
-      // $display("%d ...", $time);
+     //  Start each $display() format string with a %d argument for time
+     //  it will make the output easier to read.  Use %b, %h, and %d
+     //  for binary, hex, and decimal output of additional variables.
+     //  You do not need to add a \n at the end of your format string.
+     //  $display("%d ...", $time);
 
-      // Try adding a $display() call that prints out the PCs of
-      // each pipeline stage in hex.  Then you can easily look up the
-      // instructions in the .asm files in test_data.
+     //  Try adding a $display() call that prints out the PCs of
+     //  each pipeline stage in hex.  Then you can easily look up the
+     //  instructions in the .asm files in test_data.
 
-      // basic if syntax:
-      // if (cond) begin
-      //    ...;
-      //    ...;
-      // end
+     //  basic if syntax:
+     //  if (cond) begin
+     //     ...;
+     //     ...;
+     //  end
 
-      // Set a breakpoint on the empty $display() below
-      // to step through your pipeline cycle-by-cycle.
-      // You'll need to rewind the simulation to start
-      // stepping from the beginning.
+     //  Set a breakpoint on the empty $display() below
+     //  to step through your pipeline cycle-by-cycle.
+     //  You'll need to rewind the simulation to start
+     //  stepping from the beginning.
 
-      // You can also simulate for XXX ns, then set the
-      // breakpoint to start stepping midway through the
-      // testbench.  Use the $time printouts you added above (!)
-      // to figure out when your problem instruction first
-      // enters the fetch stage.  Rewind your simulation,
-      // run it for that many nanoseconds, then set
-      // the breakpoint.
+     //  You can also simulate for XXX ns, then set the
+     //  breakpoint to start stepping midway through the
+     //  testbench.  Use the $time printouts you added above (!)
+     //  to figure out when your problem instruction first
+     //  enters the fetch stage.  Rewind your simulation,
+     //  run it for that many nanoseconds, then set
+     //  the breakpoint.
 
-      // In the objects view, you can change the values to
-      // hexadecimal by selecting all signals (Ctrl-A),
-      // then right-click, and select Radix->Hexadecimal.
+     //  In the objects view, you can change the values to
+     //  hexadecimal by selecting all signals (Ctrl-A),
+     //  then right-click, and select Radix->Hexadecimal.
 
-      // To see the values of wires within a module, select
-      // the module in the hierarchy in the "Scopes" pane.
-      // The Objects pane will update to display the wires
-      // in that module.
+     //  To see the values of wires within a module, select
+     //  the module in the hierarchy in the "Scopes" pane.
+     //  The Objects pane will update to display the wires
+     //  in that module.
 
-      //$display();
+     //  $display();
    end
 endmodule
