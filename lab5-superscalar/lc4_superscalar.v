@@ -222,7 +222,7 @@ module lc4_processor(input wire         clk,             // main clock
                               EX_rt_data_B; 
      
                         
-   // Instantiate ALUs
+   // Instantiate ALUs ** skip bypassing for a bit
    wire [15:0] alu_result_A, alu_result_B;                                            
    lc4_alu ALU_A (.i_insn(EX_insn_A), .i_pc(EX_pc_A), .i_r1data(EX_aux_rs_data_A),
                   .i_r2data(EX_aux_rt_data_A), .o_result(alu_result_A));
