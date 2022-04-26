@@ -112,7 +112,7 @@ module lc4_processor(input wire         clk,             // main clock
    // Register Data Wires
    wire [15:0] 	 rs_data_A, rt_data_A, rs_data_B, rt_data_B;
       
-   // Instantiate Register File
+   // Instantiate Register File (handles WD bypassing)
    lc4_regfile_ss Register_ss (.clk(clk), .gwe(gwe), .rst(rst),
                   .i_rs_A(r1sel_A), .o_rs_data_A(rs_data_A), .i_rt_A(r2sel_A), .o_rt_data_A(rt_data_A),
                   .i_rs_B(r2sel_B), .o_rs_data_B(rs_data_B), .i_rt_B(r2sel_B), .o_rt_data_B(rt_data_B),
@@ -124,7 +124,7 @@ module lc4_processor(input wire         clk,             // main clock
    assign increment_by_one = (((wsel_A == r1sel_B) & r1re_B | (wsel_A == r2sel_B) & r2re_B)) & regfile_we_A;
    assign DEC_stall_B = increment_by_one ? 2'b01 : DEC_stall_B_temp;
 
-   // Bypass logic
+   // Bypass logic (XD and MD bypassing)
    wire [15:0] DEC_rs_data_A, DEC_rt_data_A, aux_rs_data_B, aux_rt_data_B, DEC_rs_data_B, DEC_rt_data_B;
    assign DEC_rs_data_A = (EX_regfile_we_B & (EX_wsel_B == r1sel_A)) ? alu_result_B :
                           (EX_regfile_we_A & (EX_wsel_A == r1sel_A)) ? alu_result_A :
@@ -170,8 +170,8 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(3) IDEX_r1sel_B(.out(EX_r1sel_B), .in(r1sel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(3) IDEX_r2sel_B(.out(EX_r2sel_B), .in(r2sel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
-   wire EX_is_load_A, EX_nzp_we_A, EX_is_branch_A, EX_is_store_A, EX_select_pc_plus_one_A, EX_is_control_insn_A, EX_regfile_we_A,
-        EX_is_load_B, EX_nzp_we_B, EX_is_branch_B, EX_is_store_B, EX_select_pc_plus_one_B, EX_is_control_insn_B, EX_regfile_we_B;
+   wire EX_is_load_A, EX_nzp_we_A, EX_is_branch_A, EX_is_store_A, EX_select_pc_plus_one_A, EX_is_control_insn_A, EX_regfile_we_A, EX_r1re_A, EX_r2re_A,
+        EX_is_load_B, EX_nzp_we_B, EX_is_branch_B, EX_is_store_B, EX_select_pc_plus_one_B, EX_is_control_insn_B, EX_regfile_we_B, EX_r1re_B, EX_r2re_B;
 
    Nbit_reg #(1) IDEX_is_load_A(.out(EX_is_load_A), .in(is_load_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) IDEX_nzp_we_A(.out(EX_nzp_we_A), .in(nzp_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -180,7 +180,9 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(1) IDEX_select_pc_plus_one_A(.out(EX_select_pc_plus_one_A), .in(select_pc_plus_one_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) IDEX_is_control_A(.out(EX_is_control_insn_A), .in(is_control_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) IDEX_regfile_we_A(.out(EX_regfile_we_A), .in(regfile_we_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-    
+   Nbit_reg #(1) IDEX_r1re_A(.out(EX_r1re_A), .in(r1re_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) IDEX_r2re_A(.out(EX_r2re_A), .in(r2re_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
    Nbit_reg #(1) IDEX_is_load_B(.out(EX_is_load_B), .in(is_load_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) IDEX_nzp_we_B(.out(EX_nzp_we_B), .in(nzp_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) IDEX_is_branch_B(.out(EX_is_branch_B), .in(is_branch_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -188,6 +190,8 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(1) IDEX_select_pc_plus_one_B(.out(EX_select_pc_plus_one_B), .in(select_pc_plus_one_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); 
    Nbit_reg #(1) IDEX_is_control_B(.out(EX_is_control_insn_B), .in(is_control_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) IDEX_regfile_we_B(.out(EX_regfile_we_B), .in(regfile_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) IDEX_r1re_B(.out(EX_r1re_B), .in(r1re_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1) IDEX_r2re_B(.out(EX_r2re_B), .in(r2re_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
    // *********************************** END EXECUTE Register ****************************************
 
@@ -196,33 +200,33 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(2, 2'b10) IDEX_stall_A(.out(EX_stall_A), .in(DEC_stall_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(2, 2'b10) IDEX_stall_B(.out(EX_stall_B), .in(DEC_stall_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
-   // Bypass logic
+   // Bypass logic (MX and WX bypassing)
    wire [15:0] EX_aux_rs_data_A, EX_aux_rt_data_A, EX_aux_rs_data_B, EX_aux_rt_data_B;
-   assign EX_aux_rs_data_A = (MEM_regfile_we_B & (MEM_wsel_B == EX_r1sel_A)) ? MEM_rd_data_B :
-                             (MEM_regfile_we_A & (MEM_wsel_A == EX_r1sel_A)) ? MEM_rd_data_A :
-                             (WB_regfile_we_B & (WB_wsel_B == EX_r1sel_A)) ? WB_rd_data_B : 
-                             (WB_regfile_we_A & (WB_wsel_A == EX_r1sel_A)) ? WB_rd_data_A :
+   assign EX_aux_rs_data_A = ((MEM_regfile_we_B & EX_r1re_B) & (MEM_wsel_B == EX_r1sel_A)) ? MEM_alu_result_B :
+                             ((MEM_regfile_we_A & EX_r1re_A) & (MEM_wsel_A == EX_r1sel_A)) ? MEM_alu_result_A :
+                             ((WB_regfile_we_B & EX_r1re_B) & (WB_wsel_B == EX_r1sel_A)) ? WB_alu_result_B : 
+                             ((WB_regfile_we_A & EX_r1re_A) & (WB_wsel_A == EX_r1sel_A)) ? WB_alu_result_A :
                              EX_rs_data_A;
 
-   assign EX_aux_rt_data_A = (MEM_regfile_we_B & (MEM_wsel_B == EX_r2sel_A)) ? MEM_rd_data_B :
-                             (MEM_regfile_we_A & (MEM_wsel_A == EX_r2sel_A)) ? MEM_rd_data_A :
-                             (WB_regfile_we_B & (WB_wsel_B == EX_r2sel_A)) ? WB_rd_data_B : 
-                             (WB_regfile_we_A & (WB_wsel_A == EX_r2sel_A)) ? WB_rd_data_A :
+   assign EX_aux_rt_data_A = ((MEM_regfile_we_B & EX_r2re_B) & (MEM_wsel_B == EX_r2sel_A)) ? MEM_alu_result_B :
+                             ((MEM_regfile_we_A & EX_r2re_A) & (MEM_wsel_A == EX_r2sel_A)) ? MEM_alu_result_A :
+                             ((WB_regfile_we_B & EX_r2re_B) & (WB_wsel_B == EX_r2sel_A)) ? WB_alu_result_B : 
+                             ((WB_regfile_we_A & EX_r2re_A) & (WB_wsel_A == EX_r2sel_A)) ? WB_alu_result_A :
                              EX_rt_data_A;
 
-   assign EX_aux_rs_data_B = (MEM_regfile_we_B & (MEM_wsel_B == EX_r1sel_B)) ? MEM_rd_data_B :
-                             (MEM_regfile_we_A & (MEM_wsel_A == EX_r1sel_B)) ? MEM_rd_data_A :
-                             (WB_regfile_we_A & (WB_wsel_B == EX_r1sel_B)) ? WB_rd_data_B :  
-                             (WB_regfile_we_A & (WB_wsel_A == EX_r1sel_B)) ? WB_rd_data_A :
+   assign EX_aux_rs_data_B = ((MEM_regfile_we_B & EX_r1re_B) & (MEM_wsel_B == EX_r1sel_B)) ? MEM_alu_result_B :
+                             ((MEM_regfile_we_A & EX_r1re_A) & (MEM_wsel_A == EX_r1sel_B)) ? MEM_alu_result_A :
+                             ((WB_regfile_we_A & EX_r1re_B) & (WB_wsel_B == EX_r1sel_B)) ? WB_alu_result_B :  
+                             ((WB_regfile_we_A & EX_r1re_A) & (WB_wsel_A == EX_r1sel_B)) ? WB_alu_result_A :
                               EX_rs_data_B;
-   assign EX_aux_rt_data_B = (MEM_regfile_we_B & (MEM_wsel_B == EX_r2sel_B)) ? MEM_rd_data_B :
-                             (MEM_regfile_we_A & (MEM_wsel_A == EX_r2sel_B)) ? MEM_rd_data_A :
-                             (WB_regfile_we_A & (WB_wsel_B == EX_r2sel_B)) ? WB_rd_data_B :
-                             (WB_regfile_we_A & (WB_wsel_A == EX_r2sel_B)) ? WB_rd_data_A :
+   assign EX_aux_rt_data_B = ((MEM_regfile_we_B & EX_r2re_B) & (MEM_wsel_B == EX_r2sel_B)) ? MEM_alu_result_B :
+                             ((MEM_regfile_we_A & EX_r2re_A) & (MEM_wsel_A == EX_r2sel_B)) ? MEM_alu_result_A :
+                             ((WB_regfile_we_A & EX_r2re_B) & (WB_wsel_B == EX_r2sel_B)) ? WB_alu_result_B :
+                             ((WB_regfile_we_A & EX_r2re_A) & (WB_wsel_A == EX_r2sel_B)) ? WB_alu_result_A :
                               EX_rt_data_B; 
      
                         
-   // Instantiate ALUs ** skip bypassing for a bit
+   // Instantiate ALUs
    wire [15:0] alu_result_A, alu_result_B;                                            
    lc4_alu ALU_A (.i_insn(EX_insn_A), .i_pc(EX_pc_A), .i_r1data(EX_aux_rs_data_A),
                   .i_r2data(EX_aux_rt_data_A), .o_result(alu_result_A));
@@ -359,7 +363,7 @@ module lc4_processor(input wire         clk,             // main clock
    // ================================================ Writeback Stage ======================================================
    // *************************************** [Memory to] Writeback Pipeline Register ***************************************
    wire [15:0] WB_pc_A, WB_insn_A, WB_rd_data_A, WB_dmem_addr_A, WB_dmem_data_A, WB_pc_B, WB_insn_B, WB_rd_data_B, WB_dmem_addr_B, WB_dmem_data_B, 
-               WB_rs_data_A, WB_rs_data_B, WB_rt_data_A, WB_rt_data_B;
+               WB_rs_data_A, WB_rs_data_B, WB_rt_data_A, WB_rt_data_B, WB_alu_result_A, WB_alu_result_B;
    wire [15:0] WB_next_pc;
    wire [2:0] WB_nzp_new_bits_A, WB_nzp_new_bits_B, WB_wsel_A, WB_wsel_B;
    wire WB_regfile_we_A, WB_nzp_we_A, WB_dmem_we_A, WB_regfile_we_B, WB_nzp_we_B, WB_dmem_we_B;
@@ -373,6 +377,8 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(16) MEMWB_rs_data_B(.out(WB_rs_data_B), .in(MEM_rs_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) MEMWB_rt_data_A(.out(WB_rt_data_A), .in(MEM_rt_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16) MEMWB_rt_data_B(.out(WB_rt_data_B), .in(MEM_rt_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) MEMWB_alu_result_A(.out(WB_alu_result_A), .in(MEM_alu_result_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) MEMWB_alu_result_B(.out(WB_alu_result_B), .in(MEM_alu_result_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
    Nbit_reg #(3) MEMWB_nzp_new_bits_A(.out(WB_nzp_new_bits_A), .in(MEM_nzp_new_bits_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(3) MEMWB_wsel_A(.out(WB_wsel_A), .in(MEM_wsel_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
