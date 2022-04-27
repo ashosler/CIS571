@@ -218,14 +218,14 @@ module lc4_processor(input wire         clk,             // main clock
    assign EX_aux_rs_data_B = ((EX_regfile_we_A & EX_r1re_B) & (EX_wsel_A == EX_r1sel_B)) ? alu_result_A :
                              ((MEM_regfile_we_B & EX_r1re_B) & (MEM_wsel_B == EX_r1sel_B)) ? MEM_alu_result_B :
                              ((MEM_regfile_we_A & EX_r1re_B) & (MEM_wsel_A == EX_r1sel_B)) ? MEM_alu_result_A :
-                             ((WB_regfile_we_A & EX_r1re_B) & (WB_wsel_B == EX_r1sel_B)) ? WB_alu_result_B :  
+                             ((WB_regfile_we_B & EX_r1re_B) & (WB_wsel_B == EX_r1sel_B)) ? WB_alu_result_B :  
                              ((WB_regfile_we_A & EX_r1re_B) & (WB_wsel_A == EX_r1sel_B)) ? WB_alu_result_A :
                               EX_rs_data_B;
 
    assign EX_aux_rt_data_B = ((EX_regfile_we_A & EX_r2re_B) & (EX_wsel_A == EX_r2sel_B)) ? alu_result_A :
                              ((MEM_regfile_we_B & EX_r2re_B) & (MEM_wsel_B == EX_r2sel_B)) ? MEM_alu_result_B :
                              ((MEM_regfile_we_A & EX_r2re_B) & (MEM_wsel_A == EX_r2sel_B)) ? MEM_alu_result_A :
-                             ((WB_regfile_we_A & EX_r2re_B) & (WB_wsel_B == EX_r2sel_B)) ? WB_alu_result_B :
+                             ((WB_regfile_we_B & EX_r2re_B) & (WB_wsel_B == EX_r2sel_B)) ? WB_alu_result_B :
                              ((WB_regfile_we_A & EX_r2re_B) & (WB_wsel_A == EX_r2sel_B)) ? WB_alu_result_A :
                               EX_rt_data_B; 
      
