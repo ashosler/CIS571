@@ -256,9 +256,9 @@ module lc4_processor(input wire         clk,             // main clock
    assign nzp_data_B = EX_is_load_B ? i_cur_dmem_data :             // where is dmem data coming from?
                        (EX_insn_B[15:12] == 4'b1111) ? pc_plus_two_B : //TRAP (or should it be all control insn?)
                        alu_result_B;
-   assign nzp_in_B = (nzp_data_B == 16'b0) ? 3'b010 :
-                     (nzp_data_B[15] == 1'b0) ? 3'b001 :
-                     3'b100;
+   assign nzp_in_B = (nzp_data_B == 16'b0) ? 3'b010 :         // zero
+                     (nzp_data_B[15] == 1'b0) ? 3'b001 :      // positive
+                     3'b100;                                  // negative
 
    assign nzp_in = EX_nzp_we_B & (!EX_is_store_B & !EX_is_load_B) ? nzp_in_B : nzp_in_A;
 
@@ -462,7 +462,7 @@ module lc4_processor(input wire         clk,             // main clock
     */
    always @(posedge gwe) begin
      if ($time > 1000 && $time < 3000)
-         $display("%h %h %h %h %h %h %h %h", EX_r1sel_A, EX_r2sel_A, EX_aux_rs_data_A, EX_aux_rt_data_A, EX_pc_A, alu_result_A, MEM_alu_result_A, WB_alu_result_A);
+         $display("%d %d %h %h %h %h %h %h", EX_r1sel_B, EX_r2sel_B, EX_aux_rs_data_B, EX_aux_rt_data_B, EX_pc_B, alu_result_B, MEM_alu_result_B, WB_alu_result_B);
      //  if (o_dmem_we)
      //    $display("%d STORE %h <= %h", $time, o_dmem_addr, o_dmem_towrite);
 
