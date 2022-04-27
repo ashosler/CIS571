@@ -55,7 +55,7 @@ module lc4_processor(input wire         clk,             // main clock
    wire [15:0] next_pc;          // Next program counter (computed and fed into pc_reg)
 
    // Program counter register, starts at 8200h at bootup
-   Nbit_reg #(16, 16'h8200) pc_reg (.in(next_pc), .out(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16, 16'h8200) pc_reg (.in(next_pc), .out(pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken | rst));
 
    // ******************************* END Pipeline Register Fetch **************************************
    // Program counter for pipe B instruction
@@ -80,10 +80,10 @@ module lc4_processor(input wire         clk,             // main clock
    // ********************************* [Fetch to] Decode Register ***********************************
    wire [15:0] DEC_insn_A, DEC_insn_B, DEC_pc_A, DEC_pc_B;
 
-   Nbit_reg #(16) IFID_insn_A(.out(DEC_insn_A), .in(IF_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IFID_insn_B(.out(DEC_insn_B), .in(IF_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IFID_pc_A(.out(DEC_pc_A), .in(IF_pc_A), .we(1'b1), .clk(clk), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IFID_pc_B(.out(DEC_pc_B), .in(IF_pc_B), .we(1'b1), .clk(clk), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16) IFID_insn_A(.out(DEC_insn_A), .in(IF_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken | rst));
+   Nbit_reg #(16) IFID_insn_B(.out(DEC_insn_B), .in(IF_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken | rst));
+   Nbit_reg #(16) IFID_pc_A(.out(DEC_pc_A), .in(IF_pc_A), .we(1'b1), .clk(clk), .gwe(gwe), .rst(branch_taken | rst));
+   Nbit_reg #(16) IFID_pc_B(.out(DEC_pc_B), .in(IF_pc_B), .we(1'b1), .clk(clk), .gwe(gwe), .rst(branch_taken | rst));
 
    // *************************************** END Decode Register *************************************
 
@@ -155,21 +155,21 @@ module lc4_processor(input wire         clk,             // main clock
    wire [2:0] EX_wsel_A, EX_wsel_B, EX_r1sel_A, EX_r1sel_B, EX_r2sel_A, EX_r2sel_B;
 
    Nbit_reg #(16) IDEX_insn_A(.out(EX_insn_A), .in(DEC_insn_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IDEX_insn_B(.out(EX_insn_B), .in(DEC_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
+   Nbit_reg #(16) IDEX_insn_B(.out(EX_insn_B), .in(DEC_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
    Nbit_reg #(16) IDEX_pc_A(.out(EX_pc_A), .in(DEC_pc_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IDEX_pc_B(.out(EX_pc_B), .in(DEC_pc_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
+   Nbit_reg #(16) IDEX_pc_B(.out(EX_pc_B), .in(DEC_pc_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
    // Changed input to be jsut rs and rt data [Changed back to be DEC_rs and DEC_rt]
    Nbit_reg #(16) IDEX_rs_data_A(.out(EX_rs_data_A), .in(DEC_rs_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IDEX_rs_data_B(.out(EX_rs_data_B), .in(DEC_rs_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
+   Nbit_reg #(16) IDEX_rs_data_B(.out(EX_rs_data_B), .in(DEC_rs_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
    Nbit_reg #(16) IDEX_rt_data_A(.out(EX_rt_data_A), .in(DEC_rt_data_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16) IDEX_rt_data_B(.out(EX_rt_data_B), .in(DEC_rt_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
+   Nbit_reg #(16) IDEX_rt_data_B(.out(EX_rt_data_B), .in(DEC_rt_data_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
    
    Nbit_reg #(3) IDEX_wsel_A(.out(EX_wsel_A), .in(wsel_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(3) IDEX_wsel_B(.out(EX_wsel_B), .in(wsel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
+   Nbit_reg #(3) IDEX_wsel_B(.out(EX_wsel_B), .in(wsel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
    Nbit_reg #(3) IDEX_r1sel_A(.out(EX_r1sel_A), .in(r1sel_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(3) IDEX_r2sel_A(.out(EX_r2sel_A), .in(r2sel_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(3) IDEX_r1sel_B(.out(EX_r1sel_B), .in(r1sel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
-   Nbit_reg #(3) IDEX_r2sel_B(.out(EX_r2sel_B), .in(r2sel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
+   Nbit_reg #(3) IDEX_r1sel_B(.out(EX_r1sel_B), .in(r1sel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
+   Nbit_reg #(3) IDEX_r2sel_B(.out(EX_r2sel_B), .in(r2sel_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
 
    wire EX_is_load_A, EX_nzp_we_A, EX_is_branch_A, EX_is_store_A, EX_select_pc_plus_one_A, EX_is_control_insn_A, EX_regfile_we_A, EX_r1re_A, EX_r2re_A,
         EX_is_load_B, EX_nzp_we_B, EX_is_branch_B, EX_is_store_B, EX_select_pc_plus_one_B, EX_is_control_insn_B, EX_regfile_we_B, EX_r1re_B, EX_r2re_B;
@@ -184,15 +184,15 @@ module lc4_processor(input wire         clk,             // main clock
    Nbit_reg #(1) IDEX_r1re_A(.out(EX_r1re_A), .in(r1re_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1) IDEX_r2re_A(.out(EX_r2re_A), .in(r2re_A), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
-   Nbit_reg #(1) IDEX_is_load_B(.out(EX_is_load_B), .in(is_load_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
-   Nbit_reg #(1) IDEX_nzp_we_B(.out(EX_nzp_we_B), .in(nzp_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
-   Nbit_reg #(1) IDEX_is_branch_B(.out(EX_is_branch_B), .in(is_branch_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
-   Nbit_reg #(1) IDEX_is_store_B(.out(EX_is_store_B), .in(is_store_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
-   Nbit_reg #(1) IDEX_select_pc_plus_one_B(.out(EX_select_pc_plus_one_B), .in(select_pc_plus_one_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst)); 
-   Nbit_reg #(1) IDEX_is_control_B(.out(EX_is_control_insn_B), .in(is_control_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
-   Nbit_reg #(1) IDEX_regfile_we_B(.out(EX_regfile_we_B), .in(regfile_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
-   Nbit_reg #(1) IDEX_r1re_B(.out(EX_r1re_B), .in(r1re_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
-   Nbit_reg #(1) IDEX_r2re_B(.out(EX_r2re_B), .in(r2re_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(increment_by_one | rst));
+   Nbit_reg #(1) IDEX_is_load_B(.out(EX_is_load_B), .in(is_load_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
+   Nbit_reg #(1) IDEX_nzp_we_B(.out(EX_nzp_we_B), .in(nzp_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
+   Nbit_reg #(1) IDEX_is_branch_B(.out(EX_is_branch_B), .in(is_branch_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
+   Nbit_reg #(1) IDEX_is_store_B(.out(EX_is_store_B), .in(is_store_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
+   Nbit_reg #(1) IDEX_select_pc_plus_one_B(.out(EX_select_pc_plus_one_B), .in(select_pc_plus_one_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst)); 
+   Nbit_reg #(1) IDEX_is_control_B(.out(EX_is_control_insn_B), .in(is_control_insn_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
+   Nbit_reg #(1) IDEX_regfile_we_B(.out(EX_regfile_we_B), .in(regfile_we_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
+   Nbit_reg #(1) IDEX_r1re_B(.out(EX_r1re_B), .in(r1re_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
+   Nbit_reg #(1) IDEX_r2re_B(.out(EX_r2re_B), .in(r2re_B), .clk(clk), .we(1'b1), .gwe(gwe), .rst(branch_taken_A | increment_by_one | rst));
 
    // *********************************** END EXECUTE Register ****************************************
 
@@ -278,6 +278,10 @@ module lc4_processor(input wire         clk,             // main clock
                              (nzp_in_B == 3'b100) & (branch_type_B[2] == 1'b1) ? 1'b1: //n
                               1'b0; 
    
+   wire branch_taken_A, branch_taken_B, branch_taken;
+   assign branch_taken_A  = (EX_is_branch_A & is_true_branch_A) | EX_is_control_insn_A;
+   assign branch_taken_B  = (EX_is_branch_B & is_true_branch_B) | EX_is_control_insn_B;
+   assign branch_taken = branch_taken_A | branch_taken_B;
 
    // Next pc calculated here
    //assign next_pc = (EX_is_branch_A & is_true_branch_A) | EX_is_control_insn_A ? alu_result_A : pc_plus_two_A; // next_pc based on which insns come out of decode
