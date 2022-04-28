@@ -1,8 +1,8 @@
 Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2017.4 (lin64) Build 2086221 Fri Dec 15 20:54:30 MST 2017
-| Date             : Mon Apr 25 13:36:46 2022
-| Host             : big11.seas.upenn.edu running 64-bit openSUSE Leap 15.3
+| Date             : Wed Apr 27 21:24:28 2022
+| Host             : big12.seas.upenn.edu running 64-bit openSUSE Leap 15.3
 | Command          : report_power -file ./output/post_route_power_report.txt
 | Design           : lc4_system
 | Device           : xc7z020clg484-1
@@ -33,7 +33,7 @@ Table of Contents
 | Total On-Chip Power (W)  | 0.262        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
-| Dynamic (W)              | 0.152        |
+| Dynamic (W)              | 0.151        |
 | Device Static (W)        | 0.110        |
 | Effective TJA (C/W)      | 11.5         |
 | Max Ambient (C)          | 82.0         |
@@ -53,14 +53,14 @@ Table of Contents
 | On-Chip                 | Power (W) | Used     | Available | Utilization (%) |
 +-------------------------+-----------+----------+-----------+-----------------+
 | Clocks                  |     0.002 |        7 |       --- |             --- |
-| Slice Logic             |     0.005 |     4536 |       --- |             --- |
-|   LUT as Logic          |     0.005 |     2827 |     53200 |            5.31 |
+| Slice Logic             |     0.004 |     4839 |       --- |             --- |
+|   LUT as Logic          |     0.004 |     3152 |     53200 |            5.92 |
 |   CARRY4                |    <0.001 |      220 |     13300 |            1.65 |
-|   Register              |    <0.001 |      631 |    106400 |            0.59 |
-|   F7/F8 Muxes           |    <0.001 |       73 |     53200 |            0.14 |
-|   LUT as Shift Register |    <0.001 |        2 |     17400 |            0.01 |
-|   Others                |     0.000 |      159 |       --- |             --- |
-| Signals                 |     0.007 |     3427 |       --- |             --- |
+|   Register              |    <0.001 |      741 |    106400 |            0.70 |
+|   F7/F8 Muxes           |    <0.001 |       98 |     53200 |            0.18 |
+|   LUT as Shift Register |    <0.001 |        3 |     17400 |            0.02 |
+|   Others                |     0.000 |      168 |       --- |             --- |
+| Signals                 |     0.007 |     3676 |       --- |             --- |
 | Block RAM               |     0.010 |     39.5 |       140 |           28.21 |
 | MMCM                    |     0.122 |        1 |         4 |           25.00 |
 | DSPs                    |    <0.001 |        2 |       220 |            0.91 |
@@ -76,7 +76,7 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) |
 +-----------+-------------+-----------+-------------+------------+
-| Vccint    |       1.000 |     0.032 |       0.023 |      0.009 |
+| Vccint    |       1.000 |     0.031 |       0.022 |      0.009 |
 | Vccaux    |       1.800 |     0.079 |       0.068 |      0.011 |
 | Vcco33    |       3.300 |     0.003 |       0.002 |      0.001 |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |
@@ -153,128 +153,149 @@ Table of Contents
 3.1 By Hierarchy
 ----------------
 
-+-------------------------------+-----------+
-| Name                          | Power (W) |
-+-------------------------------+-----------+
-| lc4_system                    |     0.152 |
-|   fake_kbd_inst               |    <0.001 |
-|     kbdr_reg                  |    <0.001 |
-|     kbsr_reg                  |    <0.001 |
-|     op_c                      |    <0.001 |
-|       state_reg               |    <0.001 |
-|     op_d                      |    <0.001 |
-|       state_reg               |    <0.001 |
-|     op_l                      |    <0.001 |
-|       state_reg               |    <0.001 |
-|     op_r                      |    <0.001 |
-|       state_reg               |    <0.001 |
-|     op_u                      |    <0.001 |
-|       state_reg               |    <0.001 |
-|   gwe_cleaner                 |    <0.001 |
-|   memory                      |     0.010 |
-|     memory                    |     0.010 |
-|       i1out_reg               |    <0.001 |
-|       i2out_reg               |    <0.001 |
-|   mmcm0                       |     0.123 |
-|   proc_inst                   |     0.012 |
-|     ALU_A                     |     0.003 |
-|       d0                      |     0.003 |
-|         genblk1[10].d0        |    <0.001 |
-|         genblk1[11].d0        |    <0.001 |
-|         genblk1[12].d0        |    <0.001 |
-|         genblk1[13].d0        |    <0.001 |
-|         genblk1[14].d0        |    <0.001 |
-|         genblk1[15].d0        |    <0.001 |
-|         genblk1[16].d0        |    <0.001 |
-|         genblk1[1].d0         |    <0.001 |
-|         genblk1[2].d0         |    <0.001 |
-|         genblk1[3].d0         |    <0.001 |
-|         genblk1[4].d0         |     0.001 |
-|         genblk1[5].d0         |    <0.001 |
-|         genblk1[6].d0         |    <0.001 |
-|         genblk1[7].d0         |    <0.001 |
-|         genblk1[8].d0         |    <0.001 |
-|         genblk1[9].d0         |    <0.001 |
-|     ALU_B                     |     0.003 |
-|       d0                      |     0.003 |
-|         genblk1[10].d0        |    <0.001 |
-|         genblk1[11].d0        |    <0.001 |
-|         genblk1[12].d0        |    <0.001 |
-|         genblk1[13].d0        |    <0.001 |
-|         genblk1[14].d0        |    <0.001 |
-|         genblk1[15].d0        |    <0.001 |
-|         genblk1[16].d0        |    <0.001 |
-|         genblk1[1].d0         |    <0.001 |
-|         genblk1[2].d0         |    <0.001 |
-|         genblk1[3].d0         |    <0.001 |
-|         genblk1[4].d0         |    <0.001 |
-|         genblk1[5].d0         |    <0.001 |
-|         genblk1[6].d0         |    <0.001 |
-|         genblk1[7].d0         |    <0.001 |
-|         genblk1[8].d0         |    <0.001 |
-|         genblk1[9].d0         |    <0.001 |
-|     EXMEM_alu_result_A        |    <0.001 |
-|     EXMEM_is_load_A           |    <0.001 |
-|     EXMEM_is_store_A          |    <0.001 |
-|     EXMEM_rd_data_A           |    <0.001 |
-|     EXMEM_rd_data_B           |    <0.001 |
-|     EXMEM_regfile_we_A        |    <0.001 |
-|     EXMEM_regfile_we_B        |     0.003 |
-|     EXMEM_rt_data_A           |    <0.001 |
-|     EXMEM_rt_data_B           |    <0.001 |
-|     EXMEM_wsel_A              |    <0.001 |
-|     EXMEM_wsel_B              |    <0.001 |
-|     IDEX_insn_A               |    <0.001 |
-|     IDEX_insn_B               |    <0.001 |
-|     IDEX_is_load_A            |    <0.001 |
-|     IDEX_is_store_A           |    <0.001 |
-|     IDEX_pc_A                 |    <0.001 |
-|     IDEX_pc_B                 |    <0.001 |
-|     IDEX_r1sel_A              |    <0.001 |
-|     IDEX_r1sel_B              |    <0.001 |
-|     IDEX_r2sel_A              |    <0.001 |
-|     IDEX_r2sel_B              |    <0.001 |
-|     IDEX_regfile_we_A         |    <0.001 |
-|     IDEX_regfile_we_B         |    <0.001 |
-|     IDEX_rt_data_A            |    <0.001 |
-|     IDEX_rt_data_B            |    <0.001 |
-|     IDEX_select_pc_plus_one_A |    <0.001 |
-|     IDEX_select_pc_plus_one_B |    <0.001 |
-|     IDEX_wsel_A               |    <0.001 |
-|     IDEX_wsel_B               |    <0.001 |
-|     IFID_insn_A               |    <0.001 |
-|     IFID_insn_B               |    <0.001 |
-|     IFID_pc_A                 |    <0.001 |
-|     IFID_pc_B                 |    <0.001 |
-|     MEMWB_rd_data_A           |    <0.001 |
-|     MEMWB_rd_data_B           |    <0.001 |
-|     MEMWB_regfile_we_A        |    <0.001 |
-|     MEMWB_regfile_we_B        |    <0.001 |
-|     MEMWB_wsel_A              |    <0.001 |
-|     MEMWB_wsel_B              |    <0.001 |
-|     Register_ss               |    <0.001 |
-|       genblk1[0].register     |    <0.001 |
-|       genblk1[1].register     |    <0.001 |
-|       genblk1[2].register     |    <0.001 |
-|       genblk1[3].register     |    <0.001 |
-|       genblk1[4].register     |    <0.001 |
-|       genblk1[5].register     |    <0.001 |
-|       genblk1[6].register     |    <0.001 |
-|       genblk1[7].register     |    <0.001 |
-|     pc_reg                    |    <0.001 |
-|   timer                       |    <0.001 |
-|     counter_reg               |    <0.001 |
-|     interval_reg              |    <0.001 |
-|   vga_cntrl_inst              |    <0.001 |
-|     svga_t_g                  |    <0.001 |
-|     v_out_inst                |    <0.001 |
-|       VGA_HSYNCH_reg          |    <0.001 |
-|       VGA_OUT_BLUE_reg        |    <0.001 |
-|       VGA_OUT_GREEN_reg       |    <0.001 |
-|       VGA_OUT_RED_reg         |    <0.001 |
-|       VGA_VSYNCH_reg          |    <0.001 |
-|   we_gen                      |    <0.001 |
-|     global_we_count           |    <0.001 |
-+-------------------------------+-----------+
++--------------------------------+-----------+
+| Name                           | Power (W) |
++--------------------------------+-----------+
+| lc4_system                     |     0.151 |
+|   fake_kbd_inst                |    <0.001 |
+|     kbdr_reg                   |    <0.001 |
+|     kbsr_reg                   |    <0.001 |
+|     op_c                       |    <0.001 |
+|       state_reg                |    <0.001 |
+|     op_d                       |    <0.001 |
+|       state_reg                |    <0.001 |
+|     op_l                       |    <0.001 |
+|       state_reg                |    <0.001 |
+|     op_r                       |    <0.001 |
+|       state_reg                |    <0.001 |
+|     op_u                       |    <0.001 |
+|       state_reg                |    <0.001 |
+|   gwe_cleaner                  |    <0.001 |
+|   memory                       |     0.010 |
+|     memory                     |     0.010 |
+|       i1out_reg                |    <0.001 |
+|       i2out_reg                |    <0.001 |
+|   mmcm0                        |     0.123 |
+|   proc_inst                    |     0.011 |
+|     ALU_A                      |     0.001 |
+|       d0                       |     0.001 |
+|         genblk1[10].d0         |    <0.001 |
+|         genblk1[11].d0         |    <0.001 |
+|         genblk1[12].d0         |    <0.001 |
+|         genblk1[13].d0         |    <0.001 |
+|         genblk1[14].d0         |    <0.001 |
+|         genblk1[15].d0         |    <0.001 |
+|         genblk1[16].d0         |    <0.001 |
+|         genblk1[1].d0          |    <0.001 |
+|         genblk1[2].d0          |    <0.001 |
+|         genblk1[3].d0          |    <0.001 |
+|         genblk1[4].d0          |    <0.001 |
+|         genblk1[5].d0          |    <0.001 |
+|         genblk1[6].d0          |    <0.001 |
+|         genblk1[7].d0          |    <0.001 |
+|         genblk1[8].d0          |    <0.001 |
+|         genblk1[9].d0          |    <0.001 |
+|     ALU_B                      |     0.001 |
+|       d0                       |    <0.001 |
+|         genblk1[10].d0         |    <0.001 |
+|         genblk1[11].d0         |    <0.001 |
+|         genblk1[12].d0         |    <0.001 |
+|         genblk1[13].d0         |    <0.001 |
+|         genblk1[14].d0         |    <0.001 |
+|         genblk1[15].d0         |    <0.001 |
+|         genblk1[16].d0         |    <0.001 |
+|         genblk1[1].d0          |    <0.001 |
+|         genblk1[2].d0          |    <0.001 |
+|         genblk1[3].d0          |    <0.001 |
+|         genblk1[4].d0          |    <0.001 |
+|         genblk1[5].d0          |    <0.001 |
+|         genblk1[6].d0          |    <0.001 |
+|         genblk1[7].d0          |    <0.001 |
+|         genblk1[8].d0          |    <0.001 |
+|         genblk1[9].d0          |    <0.001 |
+|     EXMEM_alu_result_A         |    <0.001 |
+|     EXMEM_alu_result_B         |     0.001 |
+|     EXMEM_dmem_data            |    <0.001 |
+|     EXMEM_is_load_A            |    <0.001 |
+|     EXMEM_is_load_B            |    <0.001 |
+|     EXMEM_is_store_A           |    <0.001 |
+|     EXMEM_pc_A                 |    <0.001 |
+|     EXMEM_pc_B                 |    <0.001 |
+|     EXMEM_regfile_we_A         |    <0.001 |
+|     EXMEM_regfile_we_B         |    <0.001 |
+|     EXMEM_rs_data_A            |    <0.001 |
+|     EXMEM_rt_data_A            |    <0.001 |
+|     EXMEM_select_pc_plus_one_A |    <0.001 |
+|     EXMEM_select_pc_plus_one_B |    <0.001 |
+|     EXMEM_wsel_A               |    <0.001 |
+|     EXMEM_wsel_B               |    <0.001 |
+|     IDEX_insn_A                |    <0.001 |
+|     IDEX_insn_B                |    <0.001 |
+|     IDEX_is_branch_A           |    <0.001 |
+|     IDEX_is_branch_B           |    <0.001 |
+|     IDEX_is_control_A          |    <0.001 |
+|     IDEX_is_control_B          |    <0.001 |
+|     IDEX_is_load_A             |    <0.001 |
+|     IDEX_is_load_B             |    <0.001 |
+|     IDEX_is_store_A            |    <0.001 |
+|     IDEX_pc_A                  |    <0.001 |
+|     IDEX_pc_B                  |    <0.001 |
+|     IDEX_r1re_A                |    <0.001 |
+|     IDEX_r1re_B                |    <0.001 |
+|     IDEX_r1sel_A               |    <0.001 |
+|     IDEX_r1sel_B               |    <0.001 |
+|     IDEX_r2re_A                |     0.002 |
+|     IDEX_r2re_B                |     0.003 |
+|     IDEX_r2sel_A               |    <0.001 |
+|     IDEX_r2sel_B               |    <0.001 |
+|     IDEX_regfile_we_A          |    <0.001 |
+|     IDEX_regfile_we_B          |    <0.001 |
+|     IDEX_rs_data_A             |    <0.001 |
+|     IDEX_rs_data_B             |    <0.001 |
+|     IDEX_rt_data_A             |    <0.001 |
+|     IDEX_rt_data_B             |    <0.001 |
+|     IDEX_select_pc_plus_one_B  |    <0.001 |
+|     IDEX_wsel_A                |    <0.001 |
+|     IDEX_wsel_B                |    <0.001 |
+|     IFID_insn_A                |    <0.001 |
+|     IFID_insn_B                |    <0.001 |
+|     IFID_pc_A                  |    <0.001 |
+|     IFID_pc_B                  |    <0.001 |
+|     MEMWB_alu_result_A         |    <0.001 |
+|     MEMWB_alu_result_B         |    <0.001 |
+|     MEMWB_is_load_A            |    <0.001 |
+|     MEMWB_is_load_B            |    <0.001 |
+|     MEMWB_pc_A                 |    <0.001 |
+|     MEMWB_pc_B                 |    <0.001 |
+|     MEMWB_regfile_we_A         |    <0.001 |
+|     MEMWB_regfile_we_B         |    <0.001 |
+|     MEMWB_select_pc_plus_one_A |    <0.001 |
+|     MEMWB_select_pc_plus_one_B |    <0.001 |
+|     MEMWB_wsel_A               |    <0.001 |
+|     MEMWB_wsel_B               |    <0.001 |
+|     Register_ss                |    <0.001 |
+|       genblk1[0].register      |    <0.001 |
+|       genblk1[1].register      |    <0.001 |
+|       genblk1[2].register      |    <0.001 |
+|       genblk1[3].register      |    <0.001 |
+|       genblk1[4].register      |    <0.001 |
+|       genblk1[5].register      |    <0.001 |
+|       genblk1[6].register      |    <0.001 |
+|       genblk1[7].register      |    <0.001 |
+|     pc_reg                     |    <0.001 |
+|   timer                        |    <0.001 |
+|     counter_reg                |    <0.001 |
+|     interval_reg               |    <0.001 |
+|   vga_cntrl_inst               |    <0.001 |
+|     svga_t_g                   |    <0.001 |
+|     v_out_inst                 |    <0.001 |
+|       VGA_HSYNCH_reg           |    <0.001 |
+|       VGA_OUT_BLUE_reg         |    <0.001 |
+|       VGA_OUT_GREEN_reg        |    <0.001 |
+|       VGA_OUT_RED_reg          |    <0.001 |
+|       VGA_VSYNCH_reg           |    <0.001 |
+|   we_gen                       |    <0.001 |
+|     global_we_count            |    <0.001 |
++--------------------------------+-----------+
 
 
